@@ -168,6 +168,38 @@
       from { opacity: 0; transform: translateY(-5px); }
       to { opacity: 1; transform: translateY(0); }
     }
+          /* Botón Actualizaciones */
+    .tab-btn.update-tab {
+      border-color: #1185ec;
+      color: #1185ec;
+    }
+    .tab-btn.update-tab.active {
+      background: #1185ec;
+      color: white;
+      border-color: #1185ec;
+    }
+    .update-item {
+      background: #181b22;
+      border-left: 4px solid #1185ec;
+      padding: 12px 15px;
+      margin: 12px 0;
+      border-radius: 4px;
+    }
+    .update-item .update-fecha {
+      color: #1185ec;
+      font-size: 0.85em;
+      font-weight: bold;
+    }
+    .update-item h4 {
+      margin: 4px 0 6px;
+      color: #f1faee;
+    }
+    .update-item ul {
+      line-height: 1.6;
+      color: #d1d5db;
+      padding-left: 20px;
+      margin: 0;
+    }
 
     /* Botón Discord */
     .discord-btn {
@@ -208,6 +240,7 @@
       <button class="tab-btn active" onclick="mostrarSeccion('reglas', this)">Reglas Generales</button>
       <button class="tab-btn" onclick="mostrarSeccion('raideo', this)">Reglas de Raideo</button>
       <button class="tab-btn vip-tab" onclick="mostrarSeccion('vip', this)">★ VIP y Donaciones</button>
+      <button class="tab-btn update-tab" onclick="mostrarSeccion('actualizaciones', this)">Actualizaciones</button>
     </div>
 
     <!-- Panel 1: Reglas Generales -->
@@ -275,6 +308,12 @@
 
     <a href="https://discord.gg/SdvFUF2k4b" class="discord-btn" target="_blank">Unirse al Discord</a>
   </div>
+  <!-- Panel 4: Actualizaciones -->
+  <div id="actualizaciones" class="tab-content">
+    <h3>Historial de Actualizaciones</h3>
+    <p style="color: #a0aab5; margin-top: 0; font-size: 0.95em;">Cambios realizados en el servidor y en esta página.</p>
+    <div id="lista-actualizaciones"></div>
+  </div>
 
   <script>
     function copiarIP() {
@@ -300,6 +339,39 @@
       document.getElementById(idSeccion).classList.add('active');
       boton.classList.add('active');
     }
+  </script>
+  <script>
+    // Para agregar una actualización, copiá un bloque y poné la entrada más nueva primero.
+    const actualizaciones = [
+      {
+        fecha: "21/11/2026",
+        titulo: "Nuevo historial de cambios",
+        cambios: [
+          "Se agregó la sección Actualizaciones.",
+          "Se corrigió una regla repetida en Reglas Generales."
+        ]
+      },
+      {
+        fecha: "01/11/2026",
+        titulo: "Ejemplo de entrada",
+        cambios: [
+          "Describí aquí un cambio del servidor o de la web."
+        ]
+      }
+    ];
+  
+    function renderizarActualizaciones() {
+      const contenedor = document.getElementById("lista-actualizaciones");
+      contenedor.innerHTML = actualizaciones.map(u => `
+        <div class="update-item">
+          <div class="update-fecha">${u.fecha}</div>
+          <h4>${u.titulo}</h4>
+          <ul>${u.cambios.map(c => `<li>${c}</li>`).join("")}</ul>
+        </div>
+      `).join("");
+    }
+  
+    renderizarActualizaciones();
   </script>
 </body>
 </html>
