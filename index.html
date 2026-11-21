@@ -68,10 +68,15 @@
       background: #e63946;
       color: white;
       border: none;
-      padding: 8px 16px;
+      box-sizing: border-box;
+      width: 112px;
+      min-width: 112px;
+      padding: 8px 10px;
       border-radius: 5px;
       cursor: pointer;
       font-weight: bold;
+      white-space: nowrap;
+      text-align: center;
       transition: background 0.2s;
     }
     .copy-btn:hover { background: #c92a37; }
@@ -244,7 +249,6 @@
     <div class="ip-box">
       <span id="server-ip">103.106.58.5:7075</span>
       <button class="copy-btn" type="button" onclick="copiarIP()" id="btn-copiar">Copiar IP</button>
-      <span id="copy-status" role="status" aria-live="polite"></span>
     </div>
 
     <!-- Estado en vivo del servidor -->
@@ -339,7 +343,6 @@
     async function copiarIP() {
       const ip = document.getElementById("server-ip").textContent.trim();
       const btn = document.getElementById("btn-copiar");
-      const status = document.getElementById("copy-status");
 
       try {
         if (navigator.clipboard && window.isSecureContext) {
@@ -354,14 +357,13 @@
           campo.select();
           const copiado = document.execCommand("copy");
           document.body.removeChild(campo);
-          if (!copiado) throw new Error("El navegador no permitió copiar.");
+          if (!copiado) throw new Error("No se pudo copiar.");
         }
 
         btn.textContent = "¡Copiada!";
         btn.style.background = "#2a9d8f";
-        status.textContent = "IP copiada al portapapeles.";
       } catch (error) {
-        status.textContent = "No se pudo copiar automáticamente. IP: " + ip;
+        btn.textContent = "Error";
       }
 
       window.setTimeout(() => {
