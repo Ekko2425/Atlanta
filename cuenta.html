@@ -166,7 +166,7 @@
         const email = document.getElementById("email").value.trim();
         if (!email) return say("Escribí tu correo electrónico para enviarte el enlace de recuperación.", "error");
         try {
-          const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/cuenta.html" });
+          const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: new URL("./cuenta.html", window.location.href).href });
           if (error) throw error;
           say("Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.", "success");
         } catch (error) { say(error.message, "error"); }
