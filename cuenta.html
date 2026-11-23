@@ -144,7 +144,7 @@
             const username = document.getElementById("username").value.trim();
             if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) throw new Error("El nombre debe tener entre 3 y 20 caracteres (letras, números o _).");
             if (pass.length < 8) throw new Error("La contraseña debe tener al menos 8 caracteres.");
-            result = await client.auth.signUp({ email, password: pass, options: { data: { username }, emailRedirectTo: window.location.origin + "/cuenta.html" } });
+            result = await client.auth.signUp({ email, password: pass, options: { data: { username }, emailRedirectTo: new URL("./cuenta.html", window.location.href).href } });
             if (result.error) throw result.error;
             if (!result.data.session) say("¡Registro recibido! Revisá tu correo y confirmá la dirección para activar tu cuenta.", "success");
             else say("¡Cuenta creada! Ya podés participar de la comunidad.", "success");
