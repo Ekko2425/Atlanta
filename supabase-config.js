@@ -1,8 +1,8 @@
 // Configuración pública de Supabase para Atlanta DayZ.
-// Reemplazá estos valores por los de tu proyecto (Project Settings > API).
-// La anon/publishable key está diseñada para el navegador; NUNCA pegues aquí
-// la service_role key ni ningún secreto privado.
+// Esta clave publishable está diseñada para utilizarse desde el navegador.
+// La seguridad de los datos depende de las políticas RLS de la base de datos.
+// Nunca agregues aquí una secret key ni una service_role key.
 window.ATLANTA_SUPABASE_CONFIG = {
-  url: "https://TU-PROYECTO.supabase.co",
-  anonKey: "TU_CLAVE_PUBLICA_ANON"
+  url: "https://flgkuhbtusyrlvqymqla.supabase.co",
+  anonKey: "sb_publishable_HyZeo5SnqQo_749AO0CRuQ_vTHHwoUk"
 };
