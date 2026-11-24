@@ -93,7 +93,9 @@ def parse_event(line, file_date, file_path, byte_offset):
     connection_match = re.search(
         r'Player "([^"]+)"\s+\(id=(' + UID + r')\s+pos=<', body
     )
-    player_uid = connection_match.group(2) if connection_match else (uids[0] if uids else None)
+    # Una conexión solo se atribuye si el BI UID sale del campo id= de esa misma línea.
+    # No usar uids[0] como fallback: podría ser un UID de otro contexto.
+    player_uid = connection_match.group(2) if connection_match else None
     actor_uid = None
     payload = {}
 
@@ -123,8 +125,6 @@ def parse_event(line, file_date, file_path, byte_offset):
         emote = re.search(r" performed (.+)$", body)
         if emote:
             payload["emote"] = emote.group(1)[:120]
-    elif " is connecting" in body:
-        event_type = "connected"
     elif " is connected" in body:
         event_type = "connected"
     elif " has been disconnected" in body:
@@ -141,6 +141,10 @@ def parse_event(line, file_date, file_path, byte_offset):
     else:
         return None
 
+    # Para eventos distintos de conexión conservamos la extracción histórica.
+    # Para connected, si no hubo coincidencia estricta de id=... pos=<, se descarta.
+    if event_type != "connected" and not player_uid and uids:
+        player_uid = uids[0]
     if not player_uid:
         return None
     if names:
