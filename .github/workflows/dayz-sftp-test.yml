@@ -96,24 +96,46 @@ jobs:
                       remote.seek(max(0, int(latest.st_size) - sample_size))
                       raw = remote.read(sample_size)
 
-                  # Only complete lines are analyzed; raw content is never printed.
                   lines = raw.splitlines(keepends=True)
                   complete_lines = [
                       line for line in lines
-                      if line.endswith((b"\n", b"\r"))
+                      if line.endswith((b"\\n", b"\\r"))
                   ]
                   date_match = reader.FILE_DATE_RE.match(latest.filename)
                   counts = Counter()
                   chat_count = 0
+                  chat_uids = set()
+                  connected_lines = 0
+                  connected_uid_count = 0
+                  parsed_connected_uid_count = 0
+                  connected_uids = set()
+                  connection_pattern = re.compile(
+                      r'Player "([^"]+)"\\s+\\(id=(' + reader.UID + r')\\s+pos=<'
+                  )
+
                   for index, raw_line in enumerate(complete_lines):
-                      line = raw_line.decode("utf-8", errors="replace").rstrip("\r\n")
-                      if reader.CHAT_RE.search(line):
+                      line = raw_line.decode("utf-8", errors="replace").rstrip("\\r\\n")
+                      chat = reader.CHAT_RE.search(line)
+                      if chat:
                           chat_count += 1
+                          chat_uids.add(chat.group(2))
+
+                      body_match = reader.TIME_RE.match(line)
+                      body = body_match.group(2) if body_match else ""
+                      if " is connected" in body or " is connecting" in body:
+                          connected_lines += 1
+                          strict_match = connection_pattern.search(body)
+                          if strict_match:
+                              connected_uid_count += 1
+                              connected_uids.add(strict_match.group(2))
+
                       event = reader.parse_event(
                           line, date_match.group(1), remote_path, index
                       )
                       if event:
                           counts[event["event_type"]] += 1
+                          if event["event_type"] == "connected" and event.get("player_uid"):
+                              parsed_connected_uid_count += 1
 
                   print("Lectura de muestra completada.")
                   print(f"Archivo analizado: {latest.filename}")
@@ -123,6 +145,10 @@ jobs:
                   for event_type, count in sorted(counts.items()):
                       print(f"  {event_type}: {count}")
                   print(f"Mensajes de vinculación detectados: {chat_count}")
+                  print(f"Líneas de conexión encontradas: {connected_lines}")
+                  print(f"Conexiones con BI UID extraído del campo id=: {connected_uid_count}")
+                  print(f"Eventos connected con player_uid asignado: {parsed_connected_uid_count}")
+                  print(f"Coincidencias entre UID de chat y UID de conexión: {len(chat_uids & connected_uids)}")
                   print("No se imprimieron nombres, UID, mensajes ni líneas ADM.")
                   print("No se enviaron datos a Supabase ni se modificó ningún archivo.")
               finally:
