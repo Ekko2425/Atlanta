@@ -32,7 +32,18 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
 .friend-empty{color:#aeb8c4;font-size:13px;padding:8px 0}.avatar-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 .topline{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}.back{display:block;margin:22px 0 0;text-align:center;color:#c7ceff;text-decoration:none}.small{font-size:12px}[hidden]{display:none!important}
 @media(max-width:560px){body{padding:16px 9px;background-attachment:scroll}.panel{padding:20px 15px}.profile-head{align-items:flex-start}.avatar{width:82px;height:82px;flex-basis:82px}.stats{grid-template-columns:1fr}.field-grid{grid-template-columns:1fr}.topline{align-items:flex-start;flex-direction:column}}
-.admin-panel{margin:24px 0;padding:18px;border:1px solid #7864d8;border-radius:12px;background:#201e32}.admin-panel h3{margin-top:0;border-color:#51466f}.admin-toolbar{display:flex;gap:8px;align-items:center}.admin-toolbar input{flex:1;min-width:0}.admin-player-list{display:grid;gap:9px;margin-top:14px}.admin-player{display:grid;grid-template-columns:minmax(0,1fr) 170px auto;gap:10px;align-items:center;padding:11px;border:1px solid #414052;border-radius:9px;background:#292638}.admin-player strong,.admin-player small{display:block;overflow-wrap:anywhere}.admin-player small{margin-top:4px;color:#b8b2ca;font-size:12px}.admin-player select{width:100%;padding:10px;border:1px solid #56516b;border-radius:8px;color:#fff;background:#171722}.admin-player button{padding:9px 12px}@media(max-width:560px){.admin-player{grid-template-columns:1fr 1fr}.admin-player>div:first-child{grid-column:1/-1}.admin-player button{width:100%}}.friend-meta strong a{color:#f4f4f4;text-decoration:none}.friend-meta strong a:hover{text-decoration:underline;color:#c7ceff}.public-profile-link{color:#c7ceff;text-decoration:none;font-weight:700}.public-profile-link:hover{text-decoration:underline}</style></head>
+.admin-panel{margin:24px 0;padding:18px;border:1px solid #7864d8;border-radius:12px;background:#201e32}.admin-panel h3{margin-top:0;border-color:#51466f}.admin-toolbar{display:flex;gap:8px;align-items:center}.admin-toolbar input{flex:1;min-width:0}.admin-player-list{display:grid;gap:9px;margin-top:14px}.admin-player{display:grid;grid-template-columns:minmax(0,1fr) 170px auto;gap:10px;align-items:center;padding:11px;border:1px solid #414052;border-radius:9px;background:#292638}.admin-player strong,.admin-player small{display:block;overflow-wrap:anywhere}.admin-player small{margin-top:4px;color:#b8b2ca;font-size:12px}.admin-player select{width:100%;padding:10px;border:1px solid #56516b;border-radius:8px;color:#fff;background:#171722}.admin-player button{padding:9px 12px}@media(max-width:560px){.admin-player{grid-template-columns:1fr 1fr}.admin-player>div:first-child{grid-column:1/-1}.admin-player button{width:100%}}.friend-meta strong a{color:#f4f4f4;text-decoration:none}.friend-meta strong a:hover{text-decoration:underline;color:#c7ceff}.public-profile-link{color:#c7ceff;text-decoration:none;font-weight:700}.public-profile-link:hover{text-decoration:underline}
+.dayz-panel{margin:24px 0;padding:18px;border:1px solid #53647a;border-radius:12px;background:#1c2631}
+.dayz-panel h3{margin-top:0}.dayz-link-box{padding:14px;border:1px solid #46566a;border-radius:10px;background:#121a23}
+.dayz-code{font-size:25px;letter-spacing:3px;font-weight:900;color:#c7ceff;overflow-wrap:anywhere;margin:12px 0}
+.dayz-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
+.dayz-stat{padding:13px 8px;text-align:center;border-radius:9px;background:#222f3d}
+.dayz-stat strong{display:block;font-size:23px;color:#c7ceff}.dayz-stat span{display:block;font-size:11px;color:#b8c0ca;margin-top:5px}
+.dayz-achievements{display:grid;gap:10px;margin-top:12px}.dayz-achievement{padding:12px;border:1px solid #3a4654;border-radius:9px;background:#222b36}
+.dayz-achievement-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.dayz-achievement p{margin:6px 0 10px;color:#b8c0ca;font-size:12px}
+.dayz-progress{height:8px;border-radius:99px;background:#101820;overflow:hidden}.dayz-progress span{display:block;height:100%;background:#7886ff}
+.dayz-state{font-size:12px;color:#aeb8c4}.dayz-state.unlocked{color:#8ee0b2}
+@media(max-width:560px){.dayz-stats{grid-template-columns:repeat(2,1fr)}}</style></head>
 <body><main class="shell"><section class="panel">
 <header class="brand"><h1>ATLANTA DAYZ</h1><p>Tu cuenta de la comunidad</p></header>
 <section id="auth-view" class="auth-panel">
@@ -54,6 +65,25 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
 <section id="account-view" hidden>
 <div class="topline"><h2>Mi perfil de jugador</h2><button id="logout-btn" class="secondary danger" type="button">Cerrar sesión</button></div>
 <div class="profile-head"><img id="avatar-preview" class="avatar" alt="Foto de perfil" hidden><div id="avatar-fallback" class="avatar avatar-fallback">AD</div><div style="min-width:0"><h2 id="display-name" class="player-name">Jugador</h2><span id="vip-badge" class="vip">Sin VIP</span><p id="member-since" class="muted small" style="margin:8px 0 0">Miembro de Atlanta DayZ</p></div></div>
+<section id="dayz-dashboard" class="dayz-panel">
+<h3>Atlanta DayZ · Estadísticas y logros</h3>
+<p class="hint" style="margin-top:0">Tus estadísticas se calculan a partir de los registros ADM del servidor y se agrupan por tu Bohemia Interactive UID.</p>
+<div id="dayz-link-panel" class="dayz-link-box">
+<strong id="dayz-link-title">Vinculá tu cuenta con DayZ</strong>
+<p id="dayz-link-description" class="hint">Generá un código y escribilo en el chat del servidor con el formato indicado. El código vence en 10 minutos.</p>
+<button id="dayz-generate-code" class="primary" type="button">Generar código de vinculación</button>
+<div id="dayz-code" class="dayz-code" hidden></div>
+<p id="dayz-chat-instruction" class="hint" hidden>En el chat del juego escribí: <strong id="dayz-chat-command"></strong></p>
+</div>
+<div id="dayz-linked-panel" class="dayz-link-box" hidden>
+<strong>Cuenta DayZ vinculada</strong>
+<p class="hint">Tu BI UID está asociado a esta cuenta de Atlanta. Los personajes que utilicen ese mismo identificador se agrupan automáticamente.</p>
+</div>
+<p id="dayz-message" class="message" role="status" aria-live="polite"></p>
+<div id="dayz-stat-grid" class="dayz-stats" hidden></div>
+<h3 style="margin-top:22px">Logros</h3>
+<div id="dayz-achievements" class="dayz-achievements"><p class="muted small">Vinculá tu cuenta para consultar tus logros.</p></div>
+</section>
 <section id="admin-vip-panel" class="admin-panel" hidden>
 <h3>Administración VIP</h3>
 <p class="hint">Panel privado de administración de Atlanta. Los cambios se guardan en Supabase.</p>
@@ -92,6 +122,74 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
  function avatarUrl(p){return p.avatar_path?client.storage.from("atlanta-avatars").getPublicUrl(p.avatar_path).data.publicUrl:null}
  function renderSteam(p){const id=p.steam_id||"";$("steam-id-display").textContent=id||"SteamID64 no configurado";const link=$("steam-profile-link");if(/^[0-9]{17}$/.test(id)){link.href="https://steamcommunity.com/profiles/"+id+"/";link.hidden=false}else{link.removeAttribute("href");link.hidden=true}}
  function renderProfile(p){profile=p;const name=p.username||user.user_metadata?.username||"Jugador";$("display-name").textContent=name;$("vip-badge").textContent=p.vip_rank||"Sin VIP";$("member-since").textContent="Miembro desde "+new Date(p.created_at).toLocaleDateString("es-AR");renderAvatar(avatarUrl(p),name);renderSteam(p);fillForm(p);$("account-email").textContent=user.email||"—";authView.hidden=true;accountView.hidden=false}
+ const DAYZ_STAT_LABELS=[
+   ["connections","Conexiones"],["kills","Bajas PvP"],["deaths","Muertes PvP"],
+   ["constructions","Construcciones"],["objects_placed","Objetos colocados"],["emotes","Emotes"]
+ ];
+ function renderDayzStats(stats){
+   const grid=$("dayz-stat-grid");grid.replaceChildren();
+   for(const [key,label] of DAYZ_STAT_LABELS){
+     const card=document.createElement("div");card.className="dayz-stat";
+     const value=document.createElement("strong");value.textContent=Number(stats?.[key]||0).toLocaleString("es-AR");
+     const caption=document.createElement("span");caption.textContent=label;
+     card.append(value,caption);grid.append(card);
+   }
+   grid.hidden=false;
+ }
+ function renderDayzAchievements(rows){
+   const container=$("dayz-achievements");container.replaceChildren();
+   if(!rows?.length){const p=document.createElement("p");p.className="muted small";p.textContent="Todavía no hay logros disponibles.";container.append(p);return}
+   for(const item of rows){
+     const card=document.createElement("article");card.className="dayz-achievement";
+     const head=document.createElement("div");head.className="dayz-achievement-head";
+     const name=document.createElement("strong");name.textContent=item.name;
+     const state=document.createElement("span");state.className="dayz-state"+(item.unlocked?" unlocked":"");state.textContent=item.unlocked?"Desbloqueado":"En progreso";
+     head.append(name,state);
+     const description=document.createElement("p");description.textContent=item.description;
+     const progress=document.createElement("div");progress.className="dayz-progress";
+     const fill=document.createElement("span");const target=Math.max(1,Number(item.target)||1);const current=Math.max(0,Number(item.progress)||0);
+     fill.style.width=Math.min(100,current/target*100)+"%";progress.append(fill);
+     const count=document.createElement("p");count.className="dayz-state";count.textContent=current.toLocaleString("es-AR")+" / "+target.toLocaleString("es-AR");
+     card.append(head,description,progress,count);container.append(card);
+   }
+ }
+ async function loadDayzDashboard(){
+   msg($("dayz-message"),"Consultando tu vinculación y estadísticas…");
+   $("dayz-generate-code").disabled=true;
+   try{
+     const {data,error}=await client.rpc("get_my_dayz_dashboard");
+     if(error)throw error;
+     if(!data?.linked){
+       $("dayz-link-panel").hidden=false;$("dayz-linked-panel").hidden=true;
+       $("dayz-stat-grid").hidden=true;
+       $("dayz-achievements").replaceChildren();
+       const p=document.createElement("p");p.className="muted small";p.textContent="Los logros aparecerán cuando vincules tu cuenta y se registren eventos en el servidor.";
+       $("dayz-achievements").append(p);
+       msg($("dayz-message"),"Tu cuenta todavía no está vinculada con DayZ.");
+     }else{
+       $("dayz-link-panel").hidden=true;$("dayz-linked-panel").hidden=false;
+       renderDayzStats(data.stats||{});renderDayzAchievements(data.achievements||[]);
+       msg($("dayz-message"),"Estadísticas actualizadas.","success");
+     }
+   }catch(error){
+     msg($("dayz-message"),"No se pudieron cargar las estadísticas de DayZ. Verificá que se haya ejecutado la configuración SQL de la sección DayZ.","error");
+   }finally{$("dayz-generate-code").disabled=false}
+ }
+ $("dayz-generate-code").addEventListener("click",async()=>{
+   const button=$("dayz-generate-code");button.disabled=true;msg($("dayz-message"),"Generando código seguro…");
+   try{
+     const {data,error}=await client.rpc("create_dayz_link_code");
+     if(error)throw error;
+     $("dayz-code").textContent=data;$("dayz-code").hidden=false;
+     $("dayz-chat-command").textContent="+ATLANTA "+data;
+     $("dayz-chat-instruction").hidden=false;
+     $("dayz-link-title").textContent="Código de vinculación generado";
+     $("dayz-link-description").textContent="Tenés 10 minutos para usar este código. No lo compartas con nadie.";
+     msg($("dayz-message"),"Código generado. Ingresalo en el chat del servidor.","success");
+   }catch(error){msg($("dayz-message"),error.message||"No se pudo generar el código.","error")}
+   finally{button.disabled=false}
+ });
+
  const VIP_RANKS=["Sin VIP","VIP Bronce","VIP Plata","VIP Oro","VIP Diamante","VIP Leyenda"];
  let adminPlayers=[];
  function adminMessage(text,type=""){msg($("admin-vip-message"),text,type)}
