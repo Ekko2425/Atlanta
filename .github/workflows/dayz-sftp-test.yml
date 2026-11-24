@@ -1,0 +1,90 @@
+name: Atlanta DayZ SFTP connection test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sftp-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Prepare Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Paramiko
+        run: python -m pip install --disable-pip-version-check paramiko==3.5.1
+
+      - name: Test SFTP login and profiles directory
+        env:
+          DAYZ_SFTP_HOST: ${{ secrets.DAYZ_SFTP_HOST }}
+          DAYZ_SFTP_PORT: ${{ secrets.DAYZ_SFTP_PORT }}
+          DAYZ_SFTP_USERNAME: ${{ secrets.DAYZ_SFTP_USERNAME }}
+          DAYZ_SFTP_PASSWORD: ${{ secrets.DAYZ_SFTP_PASSWORD }}
+          DAYZ_SFTP_PROFILES_PATH: ${{ secrets.DAYZ_SFTP_PROFILES_PATH }}
+          DAYZ_SFTP_HOST_KEY_SHA256: ${{ secrets.DAYZ_SFTP_HOST_KEY_SHA256 }}
+        run: |
+          python - <<'PY'
+          import base64
+          import hashlib
+          import os
+          import sys
+          import paramiko
+
+          required = [
+              "DAYZ_SFTP_HOST",
+              "DAYZ_SFTP_PORT",
+              "DAYZ_SFTP_USERNAME",
+              "DAYZ_SFTP_PASSWORD",
+              "DAYZ_SFTP_PROFILES_PATH",
+              "DAYZ_SFTP_HOST_KEY_SHA256",
+          ]
+          missing = [name for name in required if not os.environ.get(name)]
+          if missing:
+              print("Faltan secretos requeridos: " + ", ".join(missing))
+              sys.exit(1)
+
+          expected = os.environ["DAYZ_SFTP_HOST_KEY_SHA256"].removeprefix("SHA256:")
+          class PinPolicy(paramiko.MissingHostKeyPolicy):
+              def missing_host_key(self, client, hostname, key):
+                  actual = base64.b64encode(
+                      hashlib.sha256(key.asbytes()).digest()
+                  ).decode("ascii").rstrip("=")
+                  if actual != expected.rstrip("="):
+                      raise paramiko.SSHException(
+                          "La huella del servidor no coincide con la configurada."
+                      )
+                  print("Huella del servidor coincide con el secreto configurado.")
+
+          client = paramiko.SSHClient()
+          client.set_missing_host_key_policy(PinPolicy())
+          try:
+              client.connect(
+                  hostname=os.environ["DAYZ_SFTP_HOST"],
+                  port=int(os.environ["DAYZ_SFTP_PORT"]),
+                  username=os.environ["DAYZ_SFTP_USERNAME"],
+                  password=os.environ["DAYZ_SFTP_PASSWORD"],
+                  timeout=15,
+                  banner_timeout=15,
+                  auth_timeout=15,
+                  look_for_keys=False,
+                  allow_agent=False,
+              )
+              sftp = client.open_sftp()
+              try:
+                  entries = sftp.listdir_attr(os.environ["DAYZ_SFTP_PROFILES_PATH"])
+                  print("Conexión SFTP y acceso a /profiles: correctos.")
+                  print(f"Elementos encontrados: {len(entries)}")
+                  print("No se descargaron ni leyeron archivos.")
+              finally:
+                  sftp.close()
+          except Exception as exc:
+              print(f"Prueba SFTP fallida ({type(exc).__name__}).")
+              sys.exit(1)
+          finally:
+              client.close()
+          PY
