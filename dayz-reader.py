@@ -163,6 +163,9 @@ def main():
         base_url, service_key, "/rest/v1/dayz_file_cursors?select=file_path,byte_offset"
     ) or []
     cursors = {row["file_path"]: int(row["byte_offset"]) for row in cursor_rows}
+    # Solo el primer escaneo global puede empezar al final de los ADM existentes.
+    # Cuando ya hay cursores, todo ADM nuevo debe leerse desde el byte cero.
+    has_existing_cursors = bool(cursors)
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(PinnedHostKeyPolicy(fingerprint))
@@ -194,7 +197,8 @@ def main():
             remote_path = posixpath.join(profiles_path, attr.filename)
             size = int(attr.st_size)
             known = remote_path in cursors
-            offset = cursors.get(remote_path, size if bootstrap == "tail" else 0)
+            initial_offset = size if (bootstrap == "tail" and not has_existing_cursors) else 0
+            offset = cursors.get(remote_path, initial_offset)
             if offset > size:
                 offset = 0
 
