@@ -7,7 +7,7 @@ create extension if not exists pgcrypto with schema extensions;
 create table if not exists public.dayz_player_links (
   user_id uuid primary key references auth.users(id) on delete cascade,
   bi_uid text not null unique
-    check (char_length(bi_uid) = 44 and bi_uid ~ '^[A-Za-z0-9_=-]{44}$'),
+    check (char_length(bi_uid) = 44 and bi_uid ~ '^[-A-Za-z0-9_=]{44}$'),
   verified_at timestamptz not null default now()
 );
 
@@ -154,9 +154,10 @@ declare
   v_existing_user uuid;
   v_hash text;
 begin
-  if p_code is null or p_code !~ '^[A-Fa-f0-9]{12}     or p_bi_uid is null
+  if p_code is null or p_code !~ '^[A-Fa-f0-9]{12}$'
+     or p_bi_uid is null
      or char_length(p_bi_uid) <> 44
-     or p_bi_uid !~ '^[A-Za-z0-9_=-]{44}$' then
+     or p_bi_uid !~ '^[-A-Za-z0-9_=]{44}$' then
     return jsonb_build_object('ok', false, 'reason', 'invalid_format');
   end if;
 
