@@ -99,7 +99,7 @@ jobs:
                   lines = raw.splitlines(keepends=True)
                   complete_lines = [
                       line for line in lines
-                      if line.endswith((b"\\n", b"\\r"))
+                      if line.endswith((b"\n", b"\r"))
                   ]
                   date_match = reader.FILE_DATE_RE.match(latest.filename)
                   counts = Counter()
@@ -110,11 +110,11 @@ jobs:
                   parsed_connected_uid_count = 0
                   connected_uids = set()
                   connection_pattern = re.compile(
-                      r'Player "([^"]+)"\\s+\\(id=(' + reader.UID + r')\\s+pos=<'
+                      r'Player "([^"]+)"\s+\(id=(' + reader.UID + r')\s+pos=<'
                   )
 
                   for index, raw_line in enumerate(complete_lines):
-                      line = raw_line.decode("utf-8", errors="replace").rstrip("\\r\\n")
+                      line = raw_line.decode("utf-8", errors="replace").rstrip("\r\n")
                       chat = reader.CHAT_RE.search(line)
                       if chat:
                           chat_count += 1
