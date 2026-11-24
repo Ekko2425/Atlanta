@@ -161,7 +161,7 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
      if(error)throw error;
      if(!data?.linked){
        $("dayz-link-panel").hidden=false;$("dayz-linked-panel").hidden=true;
-       $("dayz-stat-grid").hidden=true;
+       renderDayzStats(data.stats||{});
        $("dayz-achievements").replaceChildren();
        const p=document.createElement("p");p.className="muted small";p.textContent="Los logros aparecerán cuando vincules tu cuenta y se registren eventos en el servidor.";
        $("dayz-achievements").append(p);
