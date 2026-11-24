@@ -91,10 +91,11 @@ def parse_event(line, file_date, file_path, byte_offset):
     # En líneas de conexión DayZ, el BI UID aparece dentro de id=:
     # Player "Nombre" (id=BI_UID pos=<...>) is connected.
     connection_match = re.search(
-        r'Player "([^"]+)"\s+\(id=(' + UID + r')\s+pos=<', body
+        r'Player "([^"]+)"\s+\(id=(' + UID + r')(?:\s+pos=<[^>]*>)?\)\s+is connected',
+        body,
     )
-    # Una conexión solo se atribuye si el BI UID sale del campo id= de esa misma línea.
-    # No usar uids[0] como fallback: podría ser un UID de otro contexto.
+    # El BI UID se extrae de la misma línea "is connected".
+    # La posición es opcional: DayZ puede incluirla o no según el formato del log.
     player_uid = connection_match.group(2) if connection_match else None
     actor_uid = None
     payload = {}
