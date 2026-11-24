@@ -59,9 +59,9 @@ Para mantener la primera prueba controlada, dejá la variable sin crear hasta qu
 
 La función `create_dayz_link_code()` ya está preparada para que la invoque la página cuando el usuario haya iniciado sesión. La interfaz todavía no se habilita en esta etapa. Primero vamos a comprobar el acceso SFTP y el formato real del chat ADM.
 
-El código que genera es de 8 caracteres hexadecimales, vence a los 10 minutos y no puede reutilizarse. El jugador lo escribirá en el chat del servidor con el formato:
+El código que genera es de 12 caracteres hexadecimales, vence a los 10 minutos y no puede reutilizarse. El jugador lo escribirá en el chat del servidor con el formato:
 
-`+ATLANTA A1B2C3D4`
+`+ATLANTA A1B2C3D4E5F6`
 
 El lector detecta el mensaje y confirma la vinculación usando el BI UID que figura en esa misma línea del ADM.
 
