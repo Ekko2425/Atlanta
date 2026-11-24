@@ -17,7 +17,7 @@ import paramiko
 UID = r"[A-Za-z0-9_=-]{44}"
 UID_RE = re.compile(UID)
 CHAT_RE = re.compile(
-    r'Chat\("([^"]+)"\(id=(' + UID + r')\)\):\s*\+ATLANTA\s+([A-Fa-f0-9]{8})\b',
+    r'Chat\("([^"]+)"\(id=(' + UID + r')\)\):\s*\+ATLANTA\s+([A-Fa-f0-9]{12})\b',
     re.IGNORECASE,
 )
 FILE_DATE_RE = re.compile(r"DayZServer_(\d{4}-\d{2}-\d{2})_\d{2}-\d{2}-\d{2}\.ADM$")
