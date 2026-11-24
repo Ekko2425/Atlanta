@@ -19,7 +19,7 @@ jobs:
       - name: Install Paramiko
         run: python -m pip install --disable-pip-version-check paramiko==3.5.1
 
-      - name: Test SFTP login and profiles directory
+      - name: List ADM filenames only
         env:
           DAYZ_SFTP_HOST: ${{ secrets.DAYZ_SFTP_HOST }}
           DAYZ_SFTP_PORT: ${{ secrets.DAYZ_SFTP_PORT }}
@@ -76,10 +76,20 @@ jobs:
               )
               sftp = client.open_sftp()
               try:
-                  entries = sftp.listdir_attr(os.environ["DAYZ_SFTP_PROFILES_PATH"])
-                  print("Conexión SFTP y acceso a /profiles: correctos.")
-                  print(f"Elementos encontrados: {len(entries)}")
-                  print("No se descargaron ni leyeron archivos.")
+                  path = os.environ["DAYZ_SFTP_PROFILES_PATH"]
+                  entries = sftp.listdir_attr(path)
+                  adm_files = sorted(
+                      entry.filename for entry in entries
+                      if entry.filename.lower().endswith(".adm")
+                  )
+                  print("Acceso SFTP correcto.")
+                  print(f"Archivos ADM encontrados: {len(adm_files)}")
+                  if adm_files:
+                      for filename in adm_files:
+                          print(filename)
+                  else:
+                      print("No se encontraron archivos con extensión .ADM.")
+                  print("Solo se listaron nombres. No se abrió, descargó ni leyó ningún archivo.")
               finally:
                   sftp.close()
           except Exception as exc:
