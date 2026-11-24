@@ -49,8 +49,16 @@ def api_request(base_url, service_key, path, payload=None, method=None):
             raw = response.read().decode("utf-8")
             return json.loads(raw) if raw else None
     except HTTPError as exc:
-        # Do not print response bodies: they may contain sensitive data.
-        raise RuntimeError("Supabase rechazó una operación (HTTP %s)." % exc.code) from None
+        # Mostrar solo metadatos de error de PostgREST; nunca credenciales ni payloads.
+        detail = ""
+        try:
+            body = json.loads(exc.read().decode("utf-8", errors="replace"))
+            parts = [str(body.get(k, "")) for k in ("code", "message", "hint")]
+            detail = " | ".join(part[:240] for part in parts if part)
+        except Exception:
+            pass
+        suffix = (" Detalle: " + detail) if detail else ""
+        raise RuntimeError("Supabase rechazó %s (HTTP %s).%s" % (path, exc.code, suffix)) from None
     except URLError:
         raise RuntimeError("No se pudo conectar con Supabase.") from None
 
