@@ -16,7 +16,9 @@ jobs:
   read-adm:
     # Activar manualmente con la variable de repositorio DAYZ_INGEST_ENABLED=true
     # después de cargar y verificar todos los secretos requeridos.
-    if: ${{ vars.DAYZ_INGEST_ENABLED == 'true' }}
+    # La ejecución manual permite procesar una sola vez el código recién enviado.
+    # El cron sigue desactivado mientras DAYZ_INGEST_ENABLED no sea true.
+    if: ${{ vars.DAYZ_INGEST_ENABLED == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 4
     steps:
@@ -41,5 +43,5 @@ jobs:
           DAYZ_SFTP_PASSWORD: ${{ secrets.DAYZ_SFTP_PASSWORD }}
           DAYZ_SFTP_PROFILES_PATH: ${{ secrets.DAYZ_SFTP_PROFILES_PATH }}
           DAYZ_SFTP_HOST_KEY_SHA256: ${{ secrets.DAYZ_SFTP_HOST_KEY_SHA256 }}
-          DAYZ_INITIAL_SCAN: tail
+          DAYZ_INITIAL_SCAN: ${{ github.event_name == 'workflow_dispatch' && 'from_start' || 'tail' }}
         run: python dayz-reader.py
