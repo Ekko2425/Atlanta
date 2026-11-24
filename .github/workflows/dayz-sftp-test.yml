@@ -116,9 +116,9 @@ jobs:
                   parsed_connected_uid_count = 0
                   connected_uids = set()
                   connection_pattern = re.compile(
-                      r'Player "([^"]+)"\\s+\\(id=(' + reader.UID + r')\\s+pos=<'
+                      r'Player "([^"]+)"\s+\\(id=(' + reader.UID + r')\s+pos=<'
                   )
-                  id_field_pattern = re.compile(r'\\bid=([^\\s)]+)')
+                  id_field_pattern = re.compile(r'\bid=([^\s)]+)')
 
                   for index, raw_line in enumerate(complete_lines):
                       line = raw_line.decode("utf-8", errors="replace").rstrip("\r\n")
