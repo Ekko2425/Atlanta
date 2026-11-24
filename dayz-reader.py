@@ -88,10 +88,10 @@ def parse_event(line, file_date, file_path, byte_offset):
     uids = UID_RE.findall(body)
     names = re.findall(r'Player "([^"]+)"', body)
     event_type = None
-    # En líneas de conexión DayZ, el BI UID aparece inmediatamente después
-    # del nombre: Player "Nombre" UID pos=<...>) is connected.
+    # En líneas de conexión DayZ, el BI UID aparece dentro de id=:
+    # Player "Nombre" (id=BI_UID pos=<...>) is connected.
     connection_match = re.search(
-        r'Player "([^"]+)"\s+(' + UID + r')\s+pos=<', body
+        r'Player "([^"]+)"\s+\(id=(' + UID + r')\s+pos=<', body
     )
     player_uid = connection_match.group(2) if connection_match else (uids[0] if uids else None)
     actor_uid = None
