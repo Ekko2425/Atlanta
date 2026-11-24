@@ -14,7 +14,7 @@ from urllib.request import Request, urlopen
 
 import paramiko
 
-UID = r"[A-Za-z0-9_=-]{43}"
+UID = r"[A-Za-z0-9_=-]{44}"
 UID_RE = re.compile(UID)
 CHAT_RE = re.compile(
     r'Chat\("([^"]+)"\(id=(' + UID + r')\)\):\s*\+(?:\d+\+)?ATLANTA\s+([A-Fa-f0-9]{12})\b',
