@@ -116,7 +116,7 @@ jobs:
                   parsed_connected_uid_count = 0
                   connected_uids = set()
                   connection_pattern = re.compile(
-                      r'Player "([^"]+)"\s+\\(id=(' + reader.UID + r')\s+pos=<'
+                      r'Player "([^"]+)"\s+\(id=(' + reader.UID + r')\s+pos=<'
                   )
                   id_field_pattern = re.compile(r'\bid=([^\s)]+)')
 
