@@ -106,12 +106,19 @@ jobs:
                   chat_count = 0
                   chat_uids = set()
                   connected_lines = 0
-                  connected_uid_count = 0
+                  connecting_lines = 0
+                  connected_with_player = 0
+                  connected_with_id = 0
+                  connected_with_pos = 0
+                  connected_strict_uid = 0
+                  connecting_with_id = 0
+                  id_length_counts = Counter()
                   parsed_connected_uid_count = 0
                   connected_uids = set()
                   connection_pattern = re.compile(
-                      r'Player "([^"]+)"\s+\(id=(' + reader.UID + r')\s+pos=<'
+                      r'Player "([^"]+)"\\s+\\(id=(' + reader.UID + r')\\s+pos=<'
                   )
+                  id_field_pattern = re.compile(r'\\bid=([^\\s)]+)')
 
                   for index, raw_line in enumerate(complete_lines):
                       line = raw_line.decode("utf-8", errors="replace").rstrip("\r\n")
@@ -122,12 +129,25 @@ jobs:
 
                       body_match = reader.TIME_RE.match(line)
                       body = body_match.group(2) if body_match else ""
-                      if " is connected" in body or " is connecting" in body:
+                      if " is connected" in body:
                           connected_lines += 1
+                          if re.search(r'Player "([^"]+)"', body):
+                              connected_with_player += 1
+                          id_match = id_field_pattern.search(body)
+                          if id_match:
+                              connected_with_id += 1
+                              id_length_counts[len(id_match.group(1))] += 1
+                          if "pos=<" in body:
+                              connected_with_pos += 1
                           strict_match = connection_pattern.search(body)
                           if strict_match:
-                              connected_uid_count += 1
+                              connected_strict_uid += 1
                               connected_uids.add(strict_match.group(2))
+                      elif " is connecting" in body:
+                          connecting_lines += 1
+                          id_match = id_field_pattern.search(body)
+                          if id_match:
+                              connecting_with_id += 1
 
                       event = reader.parse_event(
                           line, date_match.group(1), remote_path, index
@@ -145,8 +165,14 @@ jobs:
                   for event_type, count in sorted(counts.items()):
                       print(f"  {event_type}: {count}")
                   print(f"Mensajes de vinculación detectados: {chat_count}")
-                  print(f"Líneas de conexión encontradas: {connected_lines}")
-                  print(f"Conexiones con BI UID extraído del campo id=: {connected_uid_count}")
+                  print(f"Líneas 'is connected': {connected_lines}")
+                  print(f"Líneas 'is connecting' (no cuentan como ingreso): {connecting_lines}")
+                  print(f"'is connected' con nombre de jugador: {connected_with_player}")
+                  print(f"'is connected' con campo id=: {connected_with_id}")
+                  print(f"'is connected' con pos=<: {connected_with_pos}")
+                  print(f"'is connected' con BI UID de 44 caracteres en el patrón esperado: {connected_strict_uid}")
+                  print(f"'is connecting' con campo id=: {connecting_with_id}")
+                  print("Longitudes detectadas en campos id= (solo cantidades): " + str(dict(sorted(id_length_counts.items()))))
                   print(f"Eventos connected con player_uid asignado: {parsed_connected_uid_count}")
                   print(f"Coincidencias entre UID de chat y UID de conexión: {len(chat_uids & connected_uids)}")
                   print("No se imprimieron nombres, UID, mensajes ni líneas ADM.")
