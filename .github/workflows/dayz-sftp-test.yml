@@ -30,6 +30,8 @@ jobs:
           DAYZ_SFTP_PASSWORD: ${{ secrets.DAYZ_SFTP_PASSWORD }}
           DAYZ_SFTP_PROFILES_PATH: ${{ secrets.DAYZ_SFTP_PROFILES_PATH }}
           DAYZ_SFTP_HOST_KEY_SHA256: ${{ secrets.DAYZ_SFTP_HOST_KEY_SHA256 }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           python - <<'PY'
           import base64
@@ -39,13 +41,16 @@ jobs:
           import posixpath
           import re
           import sys
+          import json
+          from urllib.request import Request, urlopen
           from collections import Counter
           import paramiko
 
           required = [
               "DAYZ_SFTP_HOST", "DAYZ_SFTP_PORT", "DAYZ_SFTP_USERNAME",
               "DAYZ_SFTP_PASSWORD", "DAYZ_SFTP_PROFILES_PATH",
-              "DAYZ_SFTP_HOST_KEY_SHA256",
+              "DAYZ_SFTP_HOST_KEY_SHA256", "SUPABASE_URL",
+              "SUPABASE_SERVICE_ROLE_KEY",
           ]
           missing = [name for name in required if not os.environ.get(name)]
           if missing:
@@ -175,6 +180,25 @@ jobs:
                   print("Longitudes detectadas en campos id= (solo cantidades): " + str(dict(sorted(id_length_counts.items()))))
                   print(f"Eventos connected con player_uid asignado: {parsed_connected_uid_count}")
                   print(f"Coincidencias entre UID de chat y UID de conexión: {len(chat_uids & connected_uids)}")
+
+                  # Consulta de solo lectura; nunca imprime identificadores.
+                  request = Request(
+                      os.environ["SUPABASE_URL"].rstrip("/")
+                      + "/rest/v1/dayz_player_links?select=bi_uid",
+                      headers={
+                          "apikey": os.environ["SUPABASE_SERVICE_ROLE_KEY"],
+                          "Authorization": "Bearer " + os.environ["SUPABASE_SERVICE_ROLE_KEY"],
+                          "Accept": "application/json",
+                      },
+                  )
+                  with urlopen(request, timeout=20) as response:
+                      linked_rows = json.loads(response.read().decode("utf-8"))
+                  linked_uids = {
+                      row["bi_uid"] for row in linked_rows
+                      if isinstance(row.get("bi_uid"), str)
+                  }
+                  print(f"Cuentas vinculadas encontradas: {len(linked_uids)}")
+                  print(f"Coincidencias entre BI UID vinculados y conexiones recientes: {len(linked_uids & connected_uids)}")
                   print("No se imprimieron nombres, UID, mensajes ni líneas ADM.")
                   print("No se enviaron datos a Supabase ni se modificó ningún archivo.")
               finally:
