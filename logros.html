@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Logros completados de Atlanta DayZ.">
+<title>Mis logros | Atlanta DayZ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:28px 14px;color:#f4f4f4;font-family:Roboto,Arial,sans-serif;background:linear-gradient(#10151bdc,#10151bf2),url("fondo.jpg") center/cover fixed}
+.shell{width:min(100%,760px);margin:0 auto}.panel{padding:28px;border:1px solid #ffffff25;border-radius:16px;background:#171d25f2;box-shadow:0 18px 60px #0009}
+.back{display:inline-block;margin:0 0 16px;color:#c7ceff;text-decoration:none}.brand{text-align:center;margin-bottom:24px}.brand h1{margin:0 0 7px;font-size:28px;letter-spacing:1px}.brand p{margin:0;color:#b8c0ca}
+.hint{color:#aeb8c4;font-size:13px;line-height:1.5}.message{color:#cbd5e1;font-size:14px;line-height:1.5}.achievements{display:grid;gap:12px;margin-top:18px}
+.achievement{padding:16px;border:1px solid #3a4654;border-radius:10px;background:#222b36}.achievement-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.achievement strong{font-size:16px}.unlocked{color:#8ee0b2;font-size:12px;font-weight:700}.achievement p{margin:8px 0 0;color:#b8c0ca;font-size:13px}
+.empty{padding:18px;border:1px dashed #46515e;border-radius:10px;color:#b8c0ca;text-align:center}
+@media(max-width:560px){body{padding:16px 9px}.panel{padding:20px 15px}}
+</style>
+</head>
+<body><main class="shell">
+<a class="back" href="cuenta.html">← Volver a mi cuenta</a>
+<section class="panel">
+<header class="brand"><h1>ATLANTA DAYZ</h1><p>Mis logros completados</p></header>
+<p class="hint">Acá podés consultar los logros que desbloqueaste en el servidor. Se actualizan con los registros ADM.</p>
+<p id="status" class="message" role="status" aria-live="polite">Cargando tus logros…</p>
+<div id="achievements" class="achievements"></div>
+</section></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script>
+<script>
+(async()=>{
+ const status=document.getElementById("status"),list=document.getElementById("achievements");
+ const config=window.ATLANTA_SUPABASE_CONFIG||{};
+ const say=(text)=>status.textContent=text;
+ if(!config.url||!config.anonKey||!window.supabase?.createClient){say("No se pudo iniciar la conexión con la base de datos.");return}
+ const client=window.supabase.createClient(config.url,config.anonKey);
+ try{
+   const {data:sessionData,error:sessionError}=await client.auth.getSession();
+   if(sessionError)throw sessionError;
+   if(!sessionData.session){say("Iniciá sesión para consultar tus logros. Podés hacerlo desde Mi cuenta.");return}
+   const {data,error}=await client.rpc("get_my_dayz_dashboard");
+   if(error)throw error;
+   if(!data?.linked){say("Primero tenés que vincular tu cuenta de Atlanta con tu cuenta de DayZ.");return}
+   const completed=(data.achievements||[]).filter(item=>item.unlocked);
+   if(!completed.length){say("Todavía no desbloqueaste logros. ¡Seguí jugando!");return}
+   say(completed.length+" de "+(data.achievements||[]).length+" logros completados.");
+   for(const item of completed){
+     const card=document.createElement("article");card.className="achievement";
+     const head=document.createElement("div");head.className="achievement-head";
+     const name=document.createElement("strong");name.textContent=item.name;
+     const badge=document.createElement("span");badge.className="unlocked";badge.textContent="✓ Completado";
+     head.append(name,badge);
+     const description=document.createElement("p");description.textContent=item.description;
+     card.append(head,description);list.append(card);
+   }
+ }catch(error){say("No se pudieron cargar tus logros. Intentá nuevamente más tarde.")}
+})();
+</script></body></html>
