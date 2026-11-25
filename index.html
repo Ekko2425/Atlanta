@@ -225,6 +225,20 @@
       margin: 0;
     }
 
+    .update-like-row { display:flex; align-items:center; gap:10px; margin-top:14px; }
+    .update-like-btn {
+      display:inline-flex; align-items:center; gap:7px;
+      padding:8px 12px; border:1px solid #46515e; border-radius:7px;
+      color:#d1d5db; background:#252932; font-weight:700; cursor:pointer;
+      transition:background .2s,border-color .2s;
+    }
+    .update-like-btn:hover { background:#323744; }
+    .update-like-btn[aria-pressed="true"] {
+      color:#fff; background:#174d78; border-color:#1185ec;
+    }
+    .update-like-btn:disabled { opacity:.6; cursor:wait; }
+    .update-like-note { color:#a0aab5; font-size:12px; }
+
     .account-btn {
       display: inline-block;
       background: #252932;
@@ -356,6 +370,8 @@
     <p style="margin:22px 0 0;font-size:13px"><a href="terminos.html" style="color:#aeb8c4">Términos y Condiciones</a></p>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
   <script>
     async function copiarIP() {
       const ip = document.getElementById("server-ip").textContent.trim();
@@ -404,6 +420,7 @@
     // Para agregar una actualización, copiá un bloque y poné la entrada más nueva primero.
     const actualizaciones = [
       {
+        id: "2026-11-23-grandes-cambios",
         fecha: "23/11/2026",
         titulo: "Grandes cambios",
         cambios: [
@@ -412,6 +429,7 @@
         ]
       },
       {
+        id: "2026-11-21-fix-general",
         fecha: "21/11/2026",
         titulo: "Fix en General",
         cambios: [
@@ -419,6 +437,7 @@
         ]
       },
       {
+        id: "2026-11-21-creacion-pagina",
         fecha: "21/11/2026",
         titulo: "Creacion de la pagina",
         cambios: [
@@ -436,11 +455,94 @@
           <div class="update-fecha">${u.fecha}</div>
           <h4>${u.titulo}</h4>
           <ul>${u.cambios.map(c => `<li>${c}</li>`).join("")}</ul>
+          <div class="update-like-row">
+            <button class="update-like-btn" type="button" data-update-id="${u.id}" aria-pressed="false" aria-label="Me gusta">
+              <span aria-hidden="true">👍</span><span class="update-like-label">Me gusta</span>
+              <span class="update-like-count">0</span>
+            </button>
+            <span class="update-like-note">Solo miembros con cuenta pueden reaccionar.</span>
+          </div>
         </article>
       `).join("");
     }
   
     renderizarActualizaciones();
+
+    let clienteSupabase = null;
+    let sesionActual = null;
+
+    async function actualizarContadoresMeGusta() {
+      if (!clienteSupabase) return;
+      const ids = actualizaciones.map(u => u.id);
+      const { data, error } = await clienteSupabase.rpc("get_update_like_counts", {
+        p_update_ids: ids
+      });
+      if (error) {
+        console.error("No se pudieron cargar los Me gusta:", error.message);
+        return;
+      }
+      const porId = new Map((data || []).map(item => [item.update_id, item]));
+      document.querySelectorAll(".update-like-btn").forEach(btn => {
+        const dato = porId.get(btn.dataset.updateId);
+        const total = dato ? Number(dato.like_count) : 0;
+        const marcado = Boolean(dato && dato.liked_by_me);
+        btn.querySelector(".update-like-count").textContent = String(total);
+        btn.querySelector(".update-like-label").textContent = marcado ? "Te gusta" : "Me gusta";
+        btn.setAttribute("aria-pressed", String(marcado));
+        btn.setAttribute("aria-label", (marcado ? "Quitar Me gusta" : "Me gusta") + ". Total: " + total);
+      });
+    }
+
+    async function iniciarMeGusta() {
+      const config = window.ATLANTA_SUPABASE_CONFIG;
+      if (!window.supabase || !config || !config.url || !config.anonKey) {
+        console.error("No se pudo iniciar Supabase para los Me gusta.");
+        return;
+      }
+      clienteSupabase = window.supabase.createClient(config.url, config.anonKey);
+      const { data } = await clienteSupabase.auth.getSession();
+      sesionActual = data.session;
+      clienteSupabase.auth.onAuthStateChange((_evento, sesion) => {
+        sesionActual = sesion;
+        actualizarContadoresMeGusta();
+      });
+      await actualizarContadoresMeGusta();
+    }
+
+    document.getElementById("lista-actualizaciones").addEventListener("click", async evento => {
+      const boton = evento.target.closest(".update-like-btn");
+      if (!boton) return;
+      if (!sesionActual) {
+        window.location.href = "cuenta.html";
+        return;
+      }
+      if (!clienteSupabase || boton.disabled) return;
+
+      boton.disabled = true;
+      const updateId = boton.dataset.updateId;
+      const yaMarcado = boton.getAttribute("aria-pressed") === "true";
+      let resultado;
+      if (yaMarcado) {
+        resultado = await clienteSupabase
+          .from("update_likes")
+          .delete()
+          .eq("update_id", updateId)
+          .eq("user_id", sesionActual.user.id);
+      } else {
+        resultado = await clienteSupabase
+          .from("update_likes")
+          .insert({ update_id: updateId, user_id: sesionActual.user.id });
+      }
+      boton.disabled = false;
+      if (resultado.error) {
+        console.error("No se pudo guardar el Me gusta:", resultado.error.message);
+        alert("No se pudo guardar tu reacción. Probá nuevamente.");
+        return;
+      }
+      await actualizarContadoresMeGusta();
+    });
+
+    iniciarMeGusta();
   </script>
 </body>
 </html>
