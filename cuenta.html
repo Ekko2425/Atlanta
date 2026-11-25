@@ -39,11 +39,11 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
 .dayz-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
 .dayz-stat{padding:13px 8px;text-align:center;border-radius:9px;background:#222f3d}
 .dayz-stat strong{display:block;font-size:23px;color:#c7ceff}.dayz-stat span{display:block;font-size:11px;color:#b8c0ca;margin-top:5px}
-.dayz-achievements{display:grid;gap:10px;margin-top:12px}.dayz-achievement{padding:12px;border:1px solid #3a4654;border-radius:9px;background:#222b36}
+.dayz-achievements{display:grid;gap:10px;margin-top:12px;max-height:460px;overflow-y:auto;overscroll-behavior:contain;padding:2px 10px 2px 0;scrollbar-width:thin;scrollbar-color:#46515e #181b22}.dayz-achievements::-webkit-scrollbar{width:8px}.dayz-achievements::-webkit-scrollbar-track{background:#181b22;border-radius:8px}.dayz-achievements::-webkit-scrollbar-thumb{background:#46515e;border-radius:8px}.dayz-achievement{padding:12px;border:1px solid #3a4654;border-radius:9px;background:#222b36}
 .dayz-achievement-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.dayz-achievement p{margin:6px 0 10px;color:#b8c0ca;font-size:12px}
 .dayz-progress{height:8px;border-radius:99px;background:#101820;overflow:hidden}.dayz-progress span{display:block;height:100%;background:#7886ff}
 .dayz-state{font-size:12px;color:#aeb8c4}.dayz-state.unlocked{color:#8ee0b2}
-@media(max-width:560px){.dayz-stats{grid-template-columns:repeat(2,1fr)}}</style></head>
+@media(max-width:560px){.dayz-stats{grid-template-columns:repeat(2,1fr)}.dayz-achievements{max-height:60vh}}</style></head>
 <body><main class="shell"><a class="back back-top" href="index.html">← Volver al sitio principal</a><section class="panel">
 <header class="brand"><h1>ATLANTA DAYZ</h1><p>Tu cuenta de la comunidad</p></header>
 <section id="auth-view" class="auth-panel">
@@ -138,12 +138,13 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
  }
  function renderDayzAchievements(rows){
    const container=$("dayz-achievements");container.replaceChildren();
-   if(!rows?.length){const p=document.createElement("p");p.className="muted small";p.textContent="Todavía no hay logros disponibles.";container.append(p);return}
-   for(const item of rows){
+   const pending=(rows||[]).filter(item=>!item.unlocked);
+   if(!pending.length){const p=document.createElement("p");p.className="muted small";p.textContent="¡Completaste todos los logros disponibles!";container.append(p);return}
+   for(const item of pending){
      const card=document.createElement("article");card.className="dayz-achievement";
      const head=document.createElement("div");head.className="dayz-achievement-head";
      const name=document.createElement("strong");name.textContent=item.name;
-     const state=document.createElement("span");state.className="dayz-state"+(item.unlocked?" unlocked":"");state.textContent=item.unlocked?"Desbloqueado":"En progreso";
+     const state=document.createElement("span");state.className="dayz-state";state.textContent="En progreso";
      head.append(name,state);
      const description=document.createElement("p");description.textContent=item.description;
      const progress=document.createElement("div");progress.className="dayz-progress";
