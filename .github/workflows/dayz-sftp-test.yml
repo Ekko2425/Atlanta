@@ -229,8 +229,19 @@ jobs:
                               "Prefer": "count=exact",
                           },
                       )
-                      with urlopen(events_request, timeout=20) as response:
-                          stored_events = json.loads(response.read().decode("utf-8"))
+                      try:
+                          with urlopen(events_request, timeout=20) as response:
+                              stored_events = json.loads(response.read().decode("utf-8"))
+                      except HTTPError as exc:
+                          details = {}
+                          try:
+                              details = json.loads(exc.read().decode("utf-8", errors="replace"))
+                          except Exception:
+                              pass
+                          print("Consulta rechazada: dayz_events (HTTP " + str(exc.code) + ").")
+                          print("Código: " + str(details.get("code", "no informado"))[:80])
+                          print("Motivo: " + str(details.get("message", "no informado"))[:240])
+                          raise
                       stored_counts = Counter(row.get("event_type", "unknown") for row in stored_events)
                       print("Eventos guardados para la cuenta vinculada:")
                       print(f"  Total consultado: {len(stored_events)}")
@@ -247,8 +258,19 @@ jobs:
                           "Accept": "application/json",
                       },
                   )
-                  with urlopen(cursor_request, timeout=20) as response:
-                      cursor_rows = json.loads(response.read().decode("utf-8"))
+                  try:
+                      with urlopen(cursor_request, timeout=20) as response:
+                          cursor_rows = json.loads(response.read().decode("utf-8"))
+                  except HTTPError as exc:
+                      details = {}
+                      try:
+                          details = json.loads(exc.read().decode("utf-8", errors="replace"))
+                      except Exception:
+                          pass
+                      print("Consulta rechazada: dayz_file_cursors (HTTP " + str(exc.code) + ").")
+                      print("Código: " + str(details.get("code", "no informado"))[:80])
+                      print("Motivo: " + str(details.get("message", "no informado"))[:240])
+                      raise
                   print(f"Cursores ADM guardados en Supabase: {len(cursor_rows)}")
                   if cursor_rows:
                       latest_cursor = max(cursor_rows, key=lambda row: row.get("updated_at") or "")
