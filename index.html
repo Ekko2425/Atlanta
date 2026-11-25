@@ -202,6 +202,20 @@
       color: white;
       border-color: #1185ec;
     }
+    #lista-actualizaciones {
+      max-height: 460px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 2px 10px 2px 0;
+      scrollbar-width: thin;
+      scrollbar-color: #46515e #181b22;
+    }
+    #lista-actualizaciones::-webkit-scrollbar { width: 8px; }
+    #lista-actualizaciones::-webkit-scrollbar-track { background: #181b22; border-radius: 8px; }
+    #lista-actualizaciones::-webkit-scrollbar-thumb { background: #46515e; border-radius: 8px; }
+    @media (max-width: 600px) {
+      #lista-actualizaciones { max-height: 60vh; }
+    }
     .update-item {
       background: #181b22;
       border-left: 4px solid #1185ec;
