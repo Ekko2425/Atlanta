@@ -1,0 +1,22 @@
+name: Atlanta DayZ configuration check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comprobar variable de activación
+        env:
+          DAYZ_INGEST_ENABLED: ${{ vars.DAYZ_INGEST_ENABLED }}
+        run: |
+          if [ "$DAYZ_INGEST_ENABLED" = "true" ]; then
+            echo "RESULTADO: DAYZ_INGEST_ENABLED está disponible y vale true."
+          else
+            echo "RESULTADO: DAYZ_INGEST_ENABLED no está disponible como true."
+          fi
+          echo "Esta prueba no conecta con SFTP ni con Supabase y no ejecuta el lector ADM."
