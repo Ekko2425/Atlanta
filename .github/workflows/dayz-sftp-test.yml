@@ -211,6 +211,50 @@ jobs:
                   }
                   print(f"Cuentas vinculadas encontradas: {len(linked_uids)}")
                   print(f"Coincidencias entre BI UID vinculados y conexiones recientes: {len(linked_uids & connected_uids)}")
+
+                  # Conteo de solo lectura de eventos ya persistidos para cada cuenta vinculada.
+                  from urllib.parse import quote
+                  for linked_uid in sorted(linked_uids):
+                      events_url = (
+                          os.environ["SUPABASE_URL"].rstrip("/")
+                          + "/rest/v1/dayz_events?select=event_type&player_uid=eq."
+                          + quote(linked_uid, safe="")
+                      )
+                      events_request = Request(
+                          events_url,
+                          headers={
+                              "apikey": os.environ["SUPABASE_SERVICE_ROLE_KEY"],
+                              "Authorization": "Bearer " + os.environ["SUPABASE_SERVICE_ROLE_KEY"],
+                              "Accept": "application/json",
+                              "Prefer": "count=exact",
+                          },
+                      )
+                      with urlopen(events_request, timeout=20) as response:
+                          stored_events = json.loads(response.read().decode("utf-8"))
+                      stored_counts = Counter(row.get("event_type", "unknown") for row in stored_events)
+                      print("Eventos guardados para la cuenta vinculada:")
+                      print(f"  Total consultado: {len(stored_events)}")
+                      print(f"  Conexiones guardadas: {stored_counts.get('connected', 0)}")
+                      for event_type, count in sorted(stored_counts.items()):
+                          print(f"  {event_type}: {count}")
+
+                  cursor_request = Request(
+                      os.environ["SUPABASE_URL"].rstrip("/")
+                      + "/rest/v1/dayz_file_cursors?select=file_path,byte_offset,updated_at",
+                      headers={
+                          "apikey": os.environ["SUPABASE_SERVICE_ROLE_KEY"],
+                          "Authorization": "Bearer " + os.environ["SUPABASE_SERVICE_ROLE_KEY"],
+                          "Accept": "application/json",
+                      },
+                  )
+                  with urlopen(cursor_request, timeout=20) as response:
+                      cursor_rows = json.loads(response.read().decode("utf-8"))
+                  print(f"Cursores ADM guardados en Supabase: {len(cursor_rows)}")
+                  if cursor_rows:
+                      latest_cursor = max(cursor_rows, key=lambda row: row.get("updated_at") or "")
+                      print("Último cursor actualizado: " + latest_cursor.get("updated_at", "sin fecha"))
+                      print("Archivo del último cursor: " + latest_cursor.get("file_path", "").rsplit("/", 1)[-1])
+                      print("Último byte procesado: " + str(latest_cursor.get("byte_offset", "no informado")))
                   print("No se imprimieron nombres, UID, mensajes ni líneas ADM.")
                   print("No se enviaron datos a Supabase ni se modificó ningún archivo.")
               finally:
