@@ -43,6 +43,7 @@ jobs:
           import sys
           import json
           from urllib.request import Request, urlopen
+          from urllib.error import HTTPError
           from collections import Counter
           import paramiko
 
@@ -191,8 +192,19 @@ jobs:
                           "Accept": "application/json",
                       },
                   )
-                  with urlopen(request, timeout=20) as response:
-                      linked_rows = json.loads(response.read().decode("utf-8"))
+                  try:
+                      with urlopen(request, timeout=20) as response:
+                          linked_rows = json.loads(response.read().decode("utf-8"))
+                  except HTTPError as exc:
+                      details = {}
+                      try:
+                          details = json.loads(exc.read().decode("utf-8", errors="replace"))
+                      except Exception:
+                          pass
+                      print(f"Consulta de vinculación rechazada por Supabase (HTTP {exc.code}).")
+                      print("Código de respuesta: " + str(details.get("code", "no informado"))[:80])
+                      print("Motivo: " + str(details.get("message", "no informado"))[:240])
+                      raise
                   linked_uids = {
                       row["bi_uid"] for row in linked_rows
                       if isinstance(row.get("bi_uid"), str)
