@@ -14,12 +14,19 @@ alter table public.update_likes enable row level security;
 -- segura devuelve totales y si el usuario actual ya reaccionó.
 revoke all on table public.update_likes from anon, authenticated;
 grant insert, delete on table public.update_likes to authenticated;
+grant select (update_id, user_id) on table public.update_likes to authenticated;
 
 drop policy if exists "Users can add their own update likes" on public.update_likes;
 create policy "Users can add their own update likes"
   on public.update_likes for insert
   to authenticated
   with check (auth.uid() = user_id);
+
+drop policy if exists "Users can view their own update likes" on public.update_likes;
+create policy "Users can view their own update likes"
+  on public.update_likes for select
+  to authenticated
+  using (auth.uid() = user_id);
 
 drop policy if exists "Users can remove their own update likes" on public.update_likes;
 create policy "Users can remove their own update likes"
