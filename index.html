@@ -327,6 +327,27 @@ html body>.container .tab-content h3{border-bottom-color:rgba(255,255,255,.14)!i
 html body>.container .update-item{background:rgba(17,29,41,.55)!important;border:1px solid rgba(87,152,216,.2)!important;border-left:4px solid #5798d8!important;border-radius:12px!important}
 @media(max-width:600px){html body{padding:16px 10px 36px!important;background-attachment:scroll!important}html body>.container{padding:12px 4px 30px!important}html body>.container .tab-content{padding:18px 14px!important}}
 
+
+/* Ajuste real de portada: quitar paneles negros y dejar respirar el fondo */
+html body .container{background:transparent!important;border:0!important;box-shadow:none!important}
+html body .container .ip-box,
+html body .container .status-section,
+html body .container .tab-content,
+html body .container .vip-box,
+html body .container .update-item{
+  background:transparent!important;
+  background-color:transparent!important;
+  border-color:rgba(255,255,255,.12)!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+html body .container .tab-content{border:0!important;border-radius:0!important}
+html body .container .tab-content h3{border-bottom-color:rgba(255,255,255,.18)!important}
+html body .container .vip-box{border-left:3px solid #e7a35c!important}
+html body .container .update-item{border-left:3px solid #5798d8!important;border-top:0!important;border-right:0!important;border-bottom:0!important}
+html body .container .ip-box{border:1px solid rgba(255,255,255,.18)!important}
+html body .container .status-section{border:0!important}
+
 </style>
 </head>
 <body>
