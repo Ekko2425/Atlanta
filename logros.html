@@ -17,7 +17,7 @@
 /* Atlanta visual refresh */
 :root{--accent:#e16a57;--accent2:#f0b779;--blue:#6f8cff}body{background-color:#080d12;background-image:radial-gradient(ellipse at 15% 0%,rgba(58,93,120,.25),transparent 45%),radial-gradient(ellipse at 90% 10%,rgba(164,64,50,.17),transparent 38%),linear-gradient(#090d12dd,#090d12f2),url("fondo.jpg")}.panel{background:linear-gradient(145deg,rgba(26,33,42,.96),rgba(13,18,24,.96));border-color:#ffffff15;border-radius:20px;box-shadow:0 24px 80px #0009,inset 0 1px #ffffff08}.brand h1{background:linear-gradient(110deg,#f1f4f7,#e56b57 68%,#f4a261);-webkit-background-clip:text;background-clip:text;color:transparent}.achievement,.empty{background:linear-gradient(145deg,#25303b,#19222c);border-color:#ffffff14;border-radius:12px}.unlocked{color:#8ee0b2}.back{color:#e4a982}
 
-</style>
+.achievement-art{width:72px;height:72px;flex:0 0 72px;image-rendering:pixelated;border-radius:10px;background:#111a23;border:1px solid #ffffff15;padding:6px}.achievement-art svg{width:100%;height:100%;shape-rendering:crispEdges}.achievement-row{display:flex;align-items:center;gap:14px}.achievement-copy{flex:1;min-width:0}@media(max-width:560px){.achievement-art{width:60px;height:60px;flex-basis:60px}}\n</style>
 </head>
 <body><main class="shell">
 <a class="back" href="cuenta.html">← Volver a mi cuenta</a>
@@ -27,7 +27,7 @@
 <p id="status" class="message" role="status" aria-live="polite">Cargando tus logros…</p>
 <div id="achievements" class="achievements"></div>
 </section></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">function achievementType(item){const t=((item.achievement_key||"")+" "+(item.name||"")+" "+(item.description||"")).toLowerCase();if(/kill|matar|asesin|combate|pvp/.test(t))return"combat";if(/death|morir|muert/.test(t))return"death";if(/construct|constru|build|edific/.test(t))return"build";if(/object|objeto|coloc|place|instal/.test(t))return"place";if(/emote|gest|baile/.test(t))return"emote";if(/connect|conex|entr|visita|sesion/.test(t))return"connect";return"survival";}function achievementImage(type){const shapes={survival:"<rect x='20' y='12' width='24' height='8' fill='#e0a65b'/><rect x='12' y='20' width='40' height='8' fill='#bd7542'/><rect x='8' y='28' width='48' height='8' fill='#86533a'/><rect x='24' y='28' width='16' height='20' fill='#273849'/><rect x='4' y='48' width='56' height='8' fill='#48644a'/>",combat:"<rect x='28' y='8' width='8' height='40' fill='#c8d5dc'/><rect x='20' y='20' width='24' height='8' fill='#c8d5dc'/><rect x='24' y='44' width='16' height='8' fill='#9a6848'/><rect x='20' y='52' width='24' height='8' fill='#9a6848'/>",death:"<rect x='16' y='16' width='32' height='32' fill='#d7d2bc'/><rect x='20' y='24' width='8' height='8' fill='#263442'/><rect x='36' y='24' width='8' height='8' fill='#263442'/><rect x='24' y='40' width='16' height='8' fill='#263442'/>",build:"<rect x='12' y='28' width='40' height='28' fill='#9b6845'/><rect x='8' y='20' width='48' height='8' fill='#d0a06a'/><rect x='20' y='12' width='8' height='16' fill='#d0a06a'/><rect x='40' y='12' width='8' height='16' fill='#d0a06a'/><rect x='24' y='36' width='16' height='20' fill='#344a5a'/>",place:"<rect x='12' y='20' width='40' height='36' fill='#b77b45'/><rect x='8' y='16' width='48' height='8' fill='#d7a05e'/><rect x='20' y='28' width='8' height='8' fill='#493b31'/><rect x='36' y='28' width='8' height='8' fill='#493b31'/><rect x='20' y='44' width='24' height='8' fill='#493b31'/>",emote:"<rect x='20' y='12' width='24' height='8' fill='#e0a65b'/><rect x='12' y='20' width='40' height='28' fill='#d7b77a'/><rect x='20' y='28' width='8' height='8' fill='#273849'/><rect x='36' y='28' width='8' height='8' fill='#273849'/><rect x='24' y='40' width='16' height='8' fill='#9c5548'/>",connect:"<rect x='28' y='8' width='8' height='8' fill='#d5dbe2'/><rect x='20' y='16' width='24' height='8' fill='#d5dbe2'/><rect x='16' y='24' width='32' height='16' fill='#7d9b65'/><rect x='24' y='40' width='8' height='16' fill='#9a6848'/><rect x='36' y='40' width='8' height='16' fill='#9a6848'/>"};return '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="64" height="64" fill="#172330"/>'+shapes[type]+'</svg>';}\n</script><script src="supabase-config.js"></script>
 <script>
 (async()=>{
  const status=document.getElementById("status"),list=document.getElementById("achievements");
@@ -47,12 +47,11 @@
    say(completed.length+" de "+(data.achievements||[]).length+" logros completados.");
    for(const item of completed){
      const card=document.createElement("article");card.className="achievement";
-     const head=document.createElement("div");head.className="achievement-head";
+     const row=document.createElement("div");row.className="achievement-row";const art=document.createElement("div");art.className="achievement-art";art.innerHTML=achievementImage(achievementType(item));
+     const copy=document.createElement("div");copy.className="achievement-copy";const head=document.createElement("div");head.className="achievement-head";
      const name=document.createElement("strong");name.textContent=item.name;
-     const badge=document.createElement("span");badge.className="unlocked";badge.textContent="✓ Completado";
-     head.append(name,badge);
-     const description=document.createElement("p");description.textContent=item.description;
-     card.append(head,description);list.append(card);
+     const badge=document.createElement("span");badge.className="unlocked";badge.textContent="✓ Completado";head.append(name,badge);
+     const description=document.createElement("p");description.textContent=item.description;copy.append(head,description);row.append(art,copy);card.append(row,description.cloneNode(true));list.append(card);
    }
  }catch(error){say("No se pudieron cargar tus logros. Intentá nuevamente más tarde.")}
 })();
