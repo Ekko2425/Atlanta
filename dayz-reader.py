@@ -121,9 +121,11 @@ def parse_event(line, file_date, file_path, byte_offset):
         built = re.search(r" Built (.+)$", body)
         if built:
             payload["construction"] = built.group(1)[:180]
-    elif " performed Emote" in body:
+    elif re.search(r"\bperformed\s+Emote\b", body, re.IGNORECASE):
+        # Los ADM pueden variar en mayúsculas/minúsculas según la versión/mod.
+        # El UID se obtiene de la misma línea del evento, como en los demás casos.
         event_type = "emote"
-        emote = re.search(r" performed (.+)$", body)
+        emote = re.search(r"\bperformed\s+(Emote[^\s]*)", body, re.IGNORECASE)
         if emote:
             payload["emote"] = emote.group(1)[:120]
     elif " is connected" in body:
