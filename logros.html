@@ -45,7 +45,12 @@
    const completed=(data.achievements||[]).filter(item=>item.unlocked);
    if(!completed.length){say("Todavía no desbloqueaste logros. ¡Seguí jugando!");return}
    say(completed.length+" de "+(data.achievements||[]).length+" logros completados.");
-   const achievementImages={};
+   const achievementImages={
+     first_connection:"assets/logros/logro-1.png",
+     first_kill:"assets/logros/logro-3.png",
+     builder:"assets/logros/logro-5.png",
+     expressive:"assets/logros/logro-6.png"
+   };
    for(const item of completed){
      const card=document.createElement("article");card.className="achievement";
      const imageSrc=achievementImages[item.achievement_key];
