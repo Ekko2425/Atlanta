@@ -524,7 +524,7 @@ html body>.container>.account-btn{
       <button class="tab-btn active" onclick="mostrarSeccion('reglas', this)">Reglas Generales</button>
       <button class="tab-btn" onclick="mostrarSeccion('raideo', this)">Reglas de Raideo</button>
       <button class="tab-btn vip-tab" onclick="mostrarSeccion('vip', this)">★ VIP y Donaciones</button>
-      <button class="tab-btn update-tab" onclick="mostrarSeccion('actualizaciones', this)">Actualizaciones</button>
+      <button class="tab-btn update-tab" onclick="mostrarSeccion('actualizaciones', this)">Actualizaciones</button><button class="tab-btn" onclick="mostrarSeccion('tutoriales', this)">Tutoriales</button>
     </div>
 
     <!-- Panel 1: Reglas Generales -->
@@ -589,6 +589,7 @@ html body>.container>.account-btn{
       <a href="https://discord.gg/uTfvKUR4fv" class="vip-btn" target="_blank" rel="noopener noreferrer">Consultar VIP en Discord</a>
     </div>
 
+    <div id="tutoriales" class="tab-content"><h3>Tutoriales</h3><p>Guías y videos útiles para la comunidad.</p><div id="lista-tutoriales"></div></div>
     <!-- Panel 4: Actualizaciones -->
     <div id="actualizaciones" class="tab-content">
       <h3>Historial de Actualizaciones</h3>
@@ -696,6 +697,7 @@ html body>.container>.account-btn{
       `).join("");
     }
   
+    async function cargarTutoriales(){try{const c=window.ATLANTA_SUPABASE_CONFIG;if(!window.supabase||!c)return;const db=window.supabase.createClient(c.url,c.anonKey);const r=await db.from("atlanta_tutorials").select("*").order("created_at",{ascending:false});const box=document.getElementById("lista-tutoriales");if(!box||!r.data)return;box.innerHTML=r.data.map(t=>{let id="";try{const u=new URL(t.youtube_url);id=u.hostname.includes("youtu.be")?u.pathname.slice(1):u.searchParams.get("v")}catch(e){}if(!/^[A-Za-z0-9_-]{11}$/.test(id||""))return "";return "<article class=\"update-item\"><h4>"+t.title+"</h4><iframe style=\"width:100%;aspect-ratio:16/9;border:0;border-radius:10px\" src=\"https://www.youtube.com/embed/"+id+"\" allowfullscreen></iframe><p>"+t.description+"</p></article>"}).join("")}catch(e){console.warn(e)}}cargarTutoriales();
     renderizarActualizaciones();
 
     let clienteSupabase = null;
