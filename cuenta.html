@@ -125,7 +125,6 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
  const TERMS_VERSION="2026-11-24";
  function setMode(next){mode=next;const signup=mode==="signup";$("login-tab").classList.toggle("active",!signup);$("signup-tab").classList.toggle("active",signup);$("username-wrap").hidden=!signup;$("username").required=signup;$("terms-wrap").hidden=!signup;$("accept-terms").required=signup;if(!signup)$("accept-terms").checked=false;$("password").autocomplete=signup?"new-password":"current-password";submit.textContent=signup?"Crear cuenta":"Iniciar sesión";submit.disabled=false;$("reset-btn").hidden=signup;msg(authMsg,"")}
  $("login-tab").onclick=()=>setMode("login");$("signup-tab").onclick=()=>setMode("signup");
- function initials(name){return (name||"AD").slice(0,2).toUpperCase()}
  function renderAvatar(url,name){const img=$("avatar-preview"),fallback=$("avatar-fallback");img.onerror=()=>{img.onerror=null;img.src=DEFAULT_FRIEND_AVATAR;img.hidden=false;fallback.hidden=true};img.src=url||DEFAULT_FRIEND_AVATAR;img.hidden=false;fallback.hidden=true;}
  function fillForm(p){$("edit-username").value=p.username||"";$("steam-id").value=p.steam_id||"";$("bio").value=p.bio||"";$("bio-count").textContent=($("bio").value||"").length;$("avatar-file").value="";avatarFile=null;removeAvatar=false}
  function avatarUrl(p){return p.avatar_path?client.storage.from("atlanta-avatars").getPublicUrl(p.avatar_path).data.publicUrl:null}
