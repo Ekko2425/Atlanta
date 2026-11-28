@@ -774,7 +774,7 @@ html body>.container>.account-btn{
       await actualizarContadoresMeGusta();
     });
 
-    async function cargarActualizacionesAdmin(){try{const c=window.ATLANTA_SUPABASE_CONFIG;if(!window.supabase||!c)return;const db=window.supabase.createClient(c.url,c.anonKey);const r=await db.from("atlanta_updates").select("*").order("created_at",{ascending:false});if(!r.data)return;r.data.forEach(u=>actualizaciones.push({id:u.id,fecha:new Date(u.created_at).toLocaleDateString("es-AR"),titulo:u.title,cambios:(u.description||"").split("\n").filter(Boolean)}));renderizarActualizaciones();await actualizarContadoresMeGusta()}catch(e){console.warn(e)}}cargarActualizacionesAdmin();
+    async function cargarActualizacionesAdmin(){try{const c=window.ATLANTA_SUPABASE_CONFIG;if(!window.supabase||!c)return;const db=window.supabase.createClient(c.url,c.anonKey);const r=await db.from("atlanta_updates").select("*").order("created_at",{ascending:false});if(!r.data)return;actualizaciones.unshift(...r.data.map(u=>({id:u.id,fecha:new Date(u.created_at).toLocaleDateString("es-AR"),titulo:u.title,cambios:(u.description||"").split("\n").filter(Boolean)})));renderizarActualizaciones();await actualizarContadoresMeGusta()}catch(e){console.warn(e)}}cargarActualizacionesAdmin();
     iniciarMeGusta();
   </script>
 </body>
