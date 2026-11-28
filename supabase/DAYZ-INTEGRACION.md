@@ -6,7 +6,7 @@ Esta primera etapa agrega una base aislada para vincular una cuenta Atlanta con 
 
 - Una cuenta Atlanta puede vincular un único BI UID de 44 caracteres.
 - Un BI UID solo puede pertenecer a una cuenta Atlanta.
-- El código de vinculación dura 10 minutos, es de un solo uso y se guarda como hash.
+- El código de vinculación dura 15 minutos, es de un solo uso y se guarda como hash.
 - El único texto que el jugador escribe en el chat es `+ATLANTA CODIGO`.
 - El procesador lee ADM por SFTP y reconoce inicialmente asesinatos PvP, objetos colocados, construcciones completadas, conexiones, desconexiones, emotes, daño e inconsciencia.
 - Los eventos se deduplican y los cursores se guardan en Supabase.
@@ -59,7 +59,7 @@ Para mantener la primera prueba controlada, dejá la variable sin crear hasta qu
 
 La función `create_dayz_link_code()` ya está preparada para que la invoque la página cuando el usuario haya iniciado sesión. La interfaz todavía no se habilita en esta etapa. Primero vamos a comprobar el acceso SFTP y el formato real del chat ADM.
 
-El código que genera es de 12 caracteres hexadecimales, vence a los 10 minutos y no puede reutilizarse. El jugador lo escribirá en el chat del servidor con el formato:
+El código que genera es de 12 caracteres hexadecimales, vence a los 15 minutos y no puede reutilizarse. El jugador lo escribirá en el chat del servidor con el formato:
 
 `+ATLANTA A1B2C3D4E5F6`
 
