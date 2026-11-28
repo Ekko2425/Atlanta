@@ -148,7 +148,12 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
    const container=$("dayz-achievements");container.replaceChildren();
    const pending=(rows||[]).filter(item=>!item.unlocked);
    if(!pending.length){const p=document.createElement("p");p.className="muted small";p.textContent="¡Completaste todos los logros disponibles!";container.append(p);return}
-   const achievementImages={};
+   const achievementImages={
+     first_connection:"assets/logros/logro-1.png",
+     first_kill:"assets/logros/logro-3.png",
+     builder:"assets/logros/logro-5.png",
+     expressive:"assets/logros/logro-6.png"
+   };
    for(const item of pending){
      const card=document.createElement("article");card.className="dayz-achievement";
      const imageSrc=achievementImages[item.achievement_key];
