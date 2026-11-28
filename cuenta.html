@@ -39,7 +39,7 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
 .dayz-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
 .dayz-stat{padding:13px 8px;text-align:center;border-radius:9px;background:#222f3d}
 .dayz-stat strong{display:block;font-size:23px;color:#c7ceff}.dayz-stat span{display:block;font-size:11px;color:#b8c0ca;margin-top:5px}
-.dayz-achievements{display:grid;gap:10px;margin-top:12px;max-height:460px;overflow-y:auto;overscroll-behavior:contain;padding:2px 10px 2px 0;scrollbar-width:thin;scrollbar-color:#46515e #181b22}.dayz-achievements::-webkit-scrollbar{width:8px}.dayz-achievements::-webkit-scrollbar-track{background:#181b22;border-radius:8px}.dayz-achievements::-webkit-scrollbar-thumb{background:#46515e;border-radius:8px}.dayz-achievement{padding:12px;border:1px solid #3a4654;border-radius:9px;background:#222b36}.dayz-achievement.with-image{display:flex;align-items:center;gap:14px}.dayz-achievement-image{display:block;width:88px;height:88px;flex:0 0 88px;object-fit:contain;border-radius:8px}.dayz-achievement-content{flex:1;min-width:0}
+.public-achievements{max-height:460px;margin:10px 0 18px}.public-achievement-empty{padding:14px;border:1px dashed #46515e;border-radius:9px;color:#aeb8c4;font-size:13px;text-align:center}.public-achievement{padding:12px;border:1px solid #3a4654;border-radius:9px;background:linear-gradient(145deg,#25303b,#19222c)}.public-achievement.with-image{display:flex;align-items:center;gap:14px}.public-achievement-image{width:78px;height:78px;flex:0 0 78px;object-fit:contain;border-radius:8px}.public-achievement-content{flex:1;min-width:0}.public-achievement p{margin:6px 0 0;color:#b8c0ca;font-size:12px}.public-achievement-state{color:#8ee0b2;font-size:12px;font-weight:800;white-space:nowrap}@media(max-width:560px){.public-achievement.with-image{gap:10px}.public-achievement-image{width:64px;height:64px;flex-basis:64px}}.dayz-achievements{display:grid;gap:10px;margin-top:12px;max-height:460px;overflow-y:auto;overscroll-behavior:contain;padding:2px 10px 2px 0;scrollbar-width:thin;scrollbar-color:#46515e #181b22}.dayz-achievements::-webkit-scrollbar{width:8px}.dayz-achievements::-webkit-scrollbar-track{background:#181b22;border-radius:8px}.dayz-achievements::-webkit-scrollbar-thumb{background:#46515e;border-radius:8px}.dayz-achievement{padding:12px;border:1px solid #3a4654;border-radius:9px;background:#222b36}.dayz-achievement.with-image{display:flex;align-items:center;gap:14px}.dayz-achievement-image{display:block;width:88px;height:88px;flex:0 0 88px;object-fit:contain;border-radius:8px}.dayz-achievement-content{flex:1;min-width:0}
 .dayz-achievement-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.dayz-achievement p{margin:6px 0 10px;color:#b8c0ca;font-size:12px}
 .dayz-progress{height:8px;border-radius:99px;background:#101820;overflow:hidden}.dayz-progress span{display:block;height:100%;background:#7886ff}
 .dayz-state{font-size:12px;color:#aeb8c4}.dayz-state.unlocked{color:#8ee0b2}
@@ -63,6 +63,7 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
 <div class="profile-head"><img id="public-avatar" class="avatar" alt="Foto de perfil" hidden><div id="public-avatar-fallback" class="avatar avatar-fallback">AD</div><div style="min-width:0"><h2 id="public-name" class="player-name">Jugador</h2><span id="public-vip" class="vip">Sin VIP</span><p id="public-member-since" class="muted small" style="margin:8px 0 0"></p></div></div>
 <h3>Sobre el jugador</h3><div class="steam-card"><p id="public-bio" style="margin:0;white-space:pre-wrap;overflow-wrap:anywhere"></p><p id="public-no-bio" class="muted small" hidden>Este jugador todavía no agregó una descripción.</p></div>
 <h3>Perfil de Steam</h3><div class="steam-card"><strong id="public-steam-id">SteamID64 no configurado</strong><p style="margin:9px 0 0"><a id="public-steam-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Ver perfil en Steam ↗</a></p></div>
+<h3>🏆 Logros desbloqueados</h3><p id="public-achievements-status" class="muted small">Consultando logros…</p><div id="public-achievements" class="dayz-achievements public-achievements"></div>
 <p id="public-profile-message" class="message" role="status" aria-live="polite"></p>
 </section>
 <section id="account-view" hidden>
@@ -284,6 +285,41 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
    const sid=p.steam_id||"";$("public-steam-id").textContent=sid||"SteamID64 no configurado";const link=$("public-steam-link");
    if(/^[0-9]{17}$/.test(sid)){link.href="https://steamcommunity.com/profiles/"+sid+"/";link.hidden=false}else{link.removeAttribute("href");link.hidden=true}
    $("public-profile-message").textContent="";
+   await loadPublicAchievements(id);
+ }
+ async function loadPublicAchievements(playerId){
+   const status=$("public-achievements-status"),list=$("public-achievements");
+   list.replaceChildren();status.textContent="Consultando logros…";
+   try{
+     const {data,error}=await client.rpc("get_public_player_achievements",{p_user_id:playerId});
+     if(error)throw error;
+     const result=data||{};
+     if(!result.linked){status.textContent="Este jugador todavía no vinculó su cuenta con DayZ.";return}
+     const completed=result.achievements||[];
+     if(!completed.length){status.textContent="Todavía no desbloqueó logros.";return}
+     status.textContent=completed.length+" logro"+(completed.length===1?" desbloqueado":"s desbloqueados");
+     const achievementImages={
+       first_connection:"assets/logros/logro-1.png",
+       first_kill:"assets/logros/logro-3.png",
+       builder:"assets/logros/logro-5.png",
+       expressive:"assets/logros/logro-6.png"
+     };
+     for(const item of completed){
+       const card=document.createElement("article");card.className="public-achievement";
+       const imageSrc=achievementImages[item.achievement_key];
+       if(imageSrc){
+         card.classList.add("with-image");
+         const image=document.createElement("img");image.className="public-achievement-image";
+         image.src=imageSrc;image.alt="Imagen del logro "+item.name;image.loading="lazy";card.append(image);
+       }
+       const content=document.createElement("div");content.className="public-achievement-content";
+       const head=document.createElement("div");head.style.cssText="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap";
+       const name=document.createElement("strong");name.textContent=item.name;
+       const state=document.createElement("span");state.className="public-achievement-state";state.textContent="✓ Completado";
+       const description=document.createElement("p");description.textContent=item.description;
+       head.append(name,state);content.append(head,description);card.append(content);list.append(card);
+     }
+   }catch(error){status.textContent="No se pudieron cargar los logros de este jugador."}
  }
  function openPlayerProfile(id){location.href="cuenta.html?profile="+encodeURIComponent(id)}
  async function loadProfile(){const {data,error}=await client.from("profiles").select("id,username,created_at,avatar_path,steam_id,bio,vip_rank").eq("id",user.id).single();if(error)throw error;renderProfile(data)}
