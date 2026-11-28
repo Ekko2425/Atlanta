@@ -1,6 +1,7 @@
 -- Atlanta DayZ: logros desbloqueados visibles en perfiles públicos.
--- Ejecutar una vez en Supabase > SQL Editor > New query.
+-- Ejecutar nuevamente en Supabase > SQL Editor para actualizar la función.
 -- Solo devuelve nombre, descripción y clave de logros completados; nunca expone BI UID ni eventos.
+-- Usa la misma normalización de BI UID que get_my_dayz_dashboard().
 
 create or replace function public.get_public_player_achievements(p_user_id uuid)
 returns jsonb
@@ -11,6 +12,7 @@ set search_path = ''
 as $$
 declare
   v_bi_uid text;
+  v_normalized_uid text;
   v_achievements jsonb;
 begin
   if p_user_id is null then
@@ -19,12 +21,19 @@ begin
 
   select l.bi_uid into v_bi_uid
   from public.dayz_player_links l
-  where l.user_id = p_user_id
-  limit 1;
+  where l.user_id = p_user_id;
 
   if v_bi_uid is null then
     return jsonb_build_object('linked', false, 'achievements', '[]'::jsonb);
   end if;
+
+  -- Igual que la función del panel personal: elimina los marcadores
+  -- "id=" y "_c=" antes de comparar los identificadores.
+  v_normalized_uid := regexp_replace(
+    regexp_replace(v_bi_uid, '^id=', ''),
+    '_c=$',
+    ''
+  );
 
   select coalesce(
     jsonb_agg(
@@ -43,10 +52,15 @@ begin
     select count(*)::bigint as current_progress
     from public.dayz_events e
     where e.event_type = d.rule->>'event_type'
-      and (
-        case when d.rule->>'uid_field' = 'actor_uid'
-          then e.actor_uid else e.player_uid end
-      ) = v_bi_uid
+      and regexp_replace(
+        regexp_replace(
+          case when d.rule->>'uid_field' = 'actor_uid'
+            then e.actor_uid else e.player_uid end,
+          '^id=', ''
+        ),
+        '_c=$',
+        ''
+      ) = v_normalized_uid
   ) p
   where d.active = true
     and p.current_progress >= (d.rule->>'target')::bigint;
