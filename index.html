@@ -679,6 +679,7 @@ html body>.container>.account-btn{
       }
     ];
   
+    let esAdminActualizaciones = false;
     function escaparContenido(valor){return String(valor??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
     function renderizarActualizaciones() {
       const contenedor=document.getElementById("lista-actualizaciones");
@@ -703,7 +704,7 @@ html body>.container>.account-btn{
 
     let clienteSupabase = null;
     let sesionActual = null;
-    let esAdminActualizaciones = false;
+
 
     async function actualizarContadoresMeGusta() {
       if (!clienteSupabase) return;
