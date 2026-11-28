@@ -124,7 +124,7 @@ begin
     v_user_id,
     encode(extensions.digest(convert_to(v_code, 'UTF8'), 'sha256'), 'hex'),
     now(),
-    now() + interval '10 minutes',
+    now() + interval '15 minutes',
     null
   )
   on conflict (user_id) do update
