@@ -1,0 +1,94 @@
+name: Atlanta - Limpieza historial Actions
+
+on:
+  schedule:
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup:
+    name: Limpiar ejecuciones antiguas
+    runs-on: ubuntu-latest
+    steps:
+      - name: Eliminar ejecuciones antiguas
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const keepLatest = 30;
+            const maxAgeDays = 30;
+            const cutoff = Date.now() - maxAgeDays * 24 * 60 * 60 * 1000;
+
+            const runs = await github.paginate(
+              github.rest.actions.listWorkflowRunsForRepo,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 100
+              },
+              response => response.data.workflow_runs
+            );
+
+            const grouped = new Map();
+            for (const run of runs) {
+              if (!grouped.has(run.workflow_id)) {
+                grouped.set(run.workflow_id, []);
+              }
+              grouped.get(run.workflow_id).push(run);
+            }
+
+            let deleted = 0;
+            let preservedRecent = 0;
+            let preservedActive = 0;
+            let preservedYoung = 0;
+
+            for (const [workflowId, workflowRuns] of grouped) {
+              workflowRuns.sort(
+                (a, b) => new Date(b.created_at) - new Date(a.created_at)
+              );
+
+              for (let index = 0; index < workflowRuns.length; index++) {
+                const run = workflowRuns[index];
+
+                if (index < keepLatest) {
+                  preservedRecent++;
+                  continue;
+                }
+
+                if (run.status !== "completed") {
+                  preservedActive++;
+                  continue;
+                }
+
+                if (new Date(run.created_at).getTime() >= cutoff) {
+                  preservedYoung++;
+                  continue;
+                }
+
+                await github.rest.actions.deleteWorkflowRun({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id
+                });
+
+                deleted++;
+                core.info(`Eliminada ejecución ${run.id} del workflow ${workflowId}`);
+              }
+            }
+
+            core.summary
+              .addHeading("Limpieza del historial de GitHub Actions")
+              .addTable([
+                [{data: "Resultado", header: true}, {data: "Cantidad", header: true}],
+                ["Ejecuciones eliminadas", deleted],
+                ["Conservadas (últimas 30 por workflow)", preservedRecent],
+                ["Conservadas (en curso)", preservedActive],
+                ["Conservadas (menos de 30 días)", preservedYoung]
+              ])
+              .addRaw("\nSe conservaron siempre las 30 ejecuciones más recientes de cada workflow.")
+              .write();
+
+            core.info(`Limpieza finalizada. Eliminadas: ${deleted}`);
