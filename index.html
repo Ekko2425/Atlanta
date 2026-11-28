@@ -744,7 +744,7 @@ html body>.container>.account-btn{
         if(!confirm("¿Seguro que querés eliminar esta actualización? Esta acción no se puede deshacer."))return;
         const {error}=await clienteSupabase.from("atlanta_updates").delete().eq("id",id);
         if(error){alert("No se pudo eliminar la actualización: "+error.message);return;}
-        actualizaciones=actualizaciones.filter(u=>String(u.id)!==String(id));renderizarActualizaciones();await actualizarContadoresMeGusta();alert("Actualización eliminada.");
+        const indice=actualizaciones.findIndex(u=>String(u.id)===String(id));if(indice>=0)actualizaciones.splice(indice,1);renderizarActualizaciones();await actualizarContadoresMeGusta();alert("Actualización eliminada.");
       }
     });
     async function iniciarMeGusta() {
