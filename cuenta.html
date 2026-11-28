@@ -39,11 +39,11 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
 .dayz-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
 .dayz-stat{padding:13px 8px;text-align:center;border-radius:9px;background:#222f3d}
 .dayz-stat strong{display:block;font-size:23px;color:#c7ceff}.dayz-stat span{display:block;font-size:11px;color:#b8c0ca;margin-top:5px}
-.dayz-achievements{display:grid;gap:10px;margin-top:12px;max-height:460px;overflow-y:auto;overscroll-behavior:contain;padding:2px 10px 2px 0;scrollbar-width:thin;scrollbar-color:#46515e #181b22}.dayz-achievements::-webkit-scrollbar{width:8px}.dayz-achievements::-webkit-scrollbar-track{background:#181b22;border-radius:8px}.dayz-achievements::-webkit-scrollbar-thumb{background:#46515e;border-radius:8px}.dayz-achievement{padding:12px;border:1px solid #3a4654;border-radius:9px;background:#222b36}
+.dayz-achievements{display:grid;gap:10px;margin-top:12px;max-height:460px;overflow-y:auto;overscroll-behavior:contain;padding:2px 10px 2px 0;scrollbar-width:thin;scrollbar-color:#46515e #181b22}.dayz-achievements::-webkit-scrollbar{width:8px}.dayz-achievements::-webkit-scrollbar-track{background:#181b22;border-radius:8px}.dayz-achievements::-webkit-scrollbar-thumb{background:#46515e;border-radius:8px}.dayz-achievement{padding:12px;border:1px solid #3a4654;border-radius:9px;background:#222b36}.dayz-achievement.with-image{display:flex;align-items:center;gap:14px}.dayz-achievement-image{display:block;width:88px;height:88px;flex:0 0 88px;object-fit:contain;border-radius:8px}.dayz-achievement-content{flex:1;min-width:0}
 .dayz-achievement-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.dayz-achievement p{margin:6px 0 10px;color:#b8c0ca;font-size:12px}
 .dayz-progress{height:8px;border-radius:99px;background:#101820;overflow:hidden}.dayz-progress span{display:block;height:100%;background:#7886ff}
 .dayz-state{font-size:12px;color:#aeb8c4}.dayz-state.unlocked{color:#8ee0b2}
-@media(max-width:560px){.dayz-stats{grid-template-columns:repeat(2,1fr)}.dayz-achievements{max-height:60vh}}/* Atlanta visual refresh */
+@media(max-width:560px){.dayz-stats{grid-template-columns:repeat(2,1fr)}.dayz-achievements{max-height:60vh}.dayz-achievement.with-image{gap:10px;padding:10px}.dayz-achievement-image{width:68px;height:68px;flex-basis:68px}}/* Atlanta visual refresh */
 :root{--accent:#e16a57;--accent2:#f0b779;--blue:#6f8cff}body{background-color:#080d12;background-image:radial-gradient(ellipse at 15% 0%,rgba(58,93,120,.25),transparent 45%),radial-gradient(ellipse at 90% 10%,rgba(164,64,50,.17),transparent 38%),linear-gradient(#090d12dd,#090d12f2),url("fondo.jpg");}.panel{background:linear-gradient(145deg,rgba(26,33,42,.96),rgba(13,18,24,.96));border-color:#ffffff15;border-radius:20px;box-shadow:0 24px 80px #0009,inset 0 1px #ffffff08}.brand h1{background:linear-gradient(110deg,#f1f4f7,#e56b57 68%,#f4a261);-webkit-background-clip:text;background-clip:text;color:transparent}.brand p{letter-spacing:.4px}.primary{background:linear-gradient(120deg,#c83e3c,#e56b57);box-shadow:0 8px 24px #d84b4330}.secondary,.tabs button,.stat,.profile-head,.steam-card,.friend-card,.dayz-link-box,.dayz-stat,.dayz-achievement,.admin-player{background:linear-gradient(145deg,#25303b,#19222c);border-color:#ffffff12;border-radius:11px}.tabs button.active{background:linear-gradient(120deg,#c83e3c,#e56b57);border-color:#e56b57}.dayz-panel,.admin-panel{background:linear-gradient(145deg,#1c2834,#121a23);border-color:#ffffff18;border-radius:14px}.dayz-progress span{background:linear-gradient(90deg,#507cce,#91a7ff)}.back{color:#e4a982}.vip{background:linear-gradient(120deg,#624326,#855c30);color:#ffd59a}
 
 </style></head>
@@ -148,8 +148,25 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
    const container=$("dayz-achievements");container.replaceChildren();
    const pending=(rows||[]).filter(item=>!item.unlocked);
    if(!pending.length){const p=document.createElement("p");p.className="muted small";p.textContent="¡Completaste todos los logros disponibles!";container.append(p);return}
+   const achievementImages={
+     first_connection:"assets/logros/logro-1.jpg",
+     first_kill:"assets/logros/logro-3.jpg",
+     builder:"assets/logros/logro-5.jpg",
+     expressive:"assets/logros/logro-6.jpg"
+   };
    for(const item of pending){
      const card=document.createElement("article");card.className="dayz-achievement";
+     const imageSrc=achievementImages[item.achievement_key];
+     if(imageSrc){
+       card.classList.add("with-image");
+       const image=document.createElement("img");
+       image.className="dayz-achievement-image";
+       image.src=imageSrc;
+       image.alt="Imagen del logro "+item.name;
+       image.loading="lazy";
+       card.append(image);
+     }
+     const content=document.createElement("div");content.className="dayz-achievement-content";
      const head=document.createElement("div");head.className="dayz-achievement-head";
      const name=document.createElement("strong");name.textContent=item.name;
      const state=document.createElement("span");state.className="dayz-state";state.textContent="En progreso";
@@ -159,9 +176,8 @@ input:focus,textarea:focus,button:focus-visible,a:focus-visible{outline:2px soli
      const fill=document.createElement("span");const target=Math.max(1,Number(item.target)||1);const current=Math.max(0,Number(item.progress)||0);
      fill.style.width=Math.min(100,current/target*100)+"%";progress.append(fill);
      const count=document.createElement("p");count.className="dayz-state";count.textContent=current.toLocaleString("es-AR")+" / "+target.toLocaleString("es-AR");
-     card.append(head,description,progress,count);container.append(card);
-   }
- }
+     content.append(head,description,progress,count);card.append(content);container.append(card);
+   } }
  async function loadDayzDashboard(){
    msg($("dayz-message"),"Consultando tu vinculación y estadísticas…");
    $("dayz-generate-code").disabled=true;
