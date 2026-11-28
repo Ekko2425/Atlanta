@@ -239,7 +239,7 @@
       margin: 0;
     }
 
-    .update-like-row { display:flex; align-items:center; gap:10px; margin-top:14px; }
+    .update-admin-actions{display:flex;gap:8px;margin-top:12px}.update-admin-actions button{padding:7px 12px;border:1px solid #46515e;border-radius:6px;background:#252932;color:#fff;cursor:pointer;font-weight:600}.update-admin-actions .update-delete-btn{border-color:#a33b43;color:#ff858b}.update-admin-actions button:hover{background:#323744}\n    .update-like-row { display:flex; align-items:center; gap:10px; margin-top:14px; }
     .update-like-btn {
       display:inline-flex; align-items:center; gap:7px;
       padding:8px 12px; border:1px solid #46515e; border-radius:7px;
@@ -679,29 +679,31 @@ html body>.container>.account-btn{
       }
     ];
   
+    function escaparContenido(valor){return String(valor??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
     function renderizarActualizaciones() {
-      const contenedor = document.getElementById("lista-actualizaciones");
-      contenedor.innerHTML = actualizaciones.map(u => `
+      const contenedor=document.getElementById("lista-actualizaciones");
+      contenedor.innerHTML=actualizaciones.map(u=>`
         <article class="update-item">
-          <div class="update-fecha">${u.fecha}</div>
-          <h4>${u.titulo}</h4>
-          <ul>${u.cambios.map(c => `<li>${c}</li>`).join("")}</ul>
+          <div class="update-fecha">${escaparContenido(u.fecha)}</div>
+          <h4>${escaparContenido(u.titulo)}</h4>
+          <ul>${u.cambios.map(c=>`<li>${escaparContenido(c)}</li>`).join("")}</ul>
+          ${esAdminActualizaciones?`<div class="update-admin-actions"><button type="button" class="update-edit-btn" data-update-id="${escaparContenido(u.id)}">Editar</button><button type="button" class="update-delete-btn" data-update-id="${escaparContenido(u.id)}">Eliminar</button></div>`:""}
           <div class="update-like-row">
-            <button class="update-like-btn" type="button" data-update-id="${u.id}" aria-pressed="false" aria-label="Me gusta">
+            <button class="update-like-btn" type="button" data-update-id="${escaparContenido(u.id)}" aria-pressed="false" aria-label="Me gusta">
               <span aria-hidden="true">👍</span><span class="update-like-label">Me gusta</span>
               <span class="update-like-count">0</span>
             </button>
             <span class="update-like-note">Solo miembros con cuenta pueden reaccionar.</span>
           </div>
-        </article>
-      `).join("");
+        </article>`).join("");
     }
-  
+
     async function cargarTutoriales(){try{const c=window.ATLANTA_SUPABASE_CONFIG;if(!window.supabase||!c)return;const db=window.supabase.createClient(c.url,c.anonKey);const r=await db.from("atlanta_tutorials").select("*").order("created_at",{ascending:false});const box=document.getElementById("lista-tutoriales");if(!box||!r.data)return;box.innerHTML=r.data.map(t=>{let id="";try{const u=new URL(t.youtube_url);id=u.hostname.includes("youtu.be")?u.pathname.slice(1):u.searchParams.get("v")}catch(e){}if(!/^[A-Za-z0-9_-]{11}$/.test(id||""))return "";return "<article class=\"update-item\"><h4>"+t.title+"</h4><iframe style=\"width:100%;aspect-ratio:16/9;border:0;border-radius:10px\" src=\"https://www.youtube.com/embed/"+id+"\" allowfullscreen></iframe><p>"+t.description+"</p></article>"}).join("")}catch(e){console.warn(e)}}cargarTutoriales();
     renderizarActualizaciones();
 
     let clienteSupabase = null;
     let sesionActual = null;
+    let esAdminActualizaciones = false;
 
     async function actualizarContadoresMeGusta() {
       if (!clienteSupabase) return;
@@ -725,6 +727,26 @@ html body>.container>.account-btn{
       });
     }
 
+    async function verificarAdminActualizaciones(){esAdminActualizaciones=false;if(sesionActual&&clienteSupabase){const r=await clienteSupabase.rpc("is_atlanta_admin");esAdminActualizaciones=!r.error&&r.data===true;}renderizarActualizaciones();}
+    document.getElementById("lista-actualizaciones").addEventListener("click",async evento=>{
+      const editar=evento.target.closest(".update-edit-btn"),borrar=evento.target.closest(".update-delete-btn");
+      if(!editar&&!borrar)return;
+      if(!esAdminActualizaciones||!clienteSupabase)return;
+      const id=(editar||borrar).dataset.updateId, item=actualizaciones.find(u=>String(u.id)===String(id));if(!item)return;
+      if(editar){
+        const nuevoTitulo=prompt("Editar título de la actualización:",item.titulo);if(nuevoTitulo===null)return;
+        const nuevaDescripcion=prompt("Editar descripción (podés separar los puntos con saltos de línea):",item.cambios.join("\\n"));if(nuevaDescripcion===null)return;
+        if(!nuevoTitulo.trim()||!nuevaDescripcion.trim()){alert("El título y la descripción no pueden quedar vacíos.");return;}
+        const {error}=await clienteSupabase.from("atlanta_updates").update({title:nuevoTitulo.trim(),description:nuevaDescripcion.trim()}).eq("id",id);
+        if(error){alert("No se pudo editar la actualización: "+error.message);return;}
+        item.titulo=nuevoTitulo.trim();item.cambios=nuevaDescripcion.split("\\n").filter(Boolean);renderizarActualizaciones();await actualizarContadoresMeGusta();alert("Actualización editada correctamente.");
+      }else{
+        if(!confirm("¿Seguro que querés eliminar esta actualización? Esta acción no se puede deshacer."))return;
+        const {error}=await clienteSupabase.from("atlanta_updates").delete().eq("id",id);
+        if(error){alert("No se pudo eliminar la actualización: "+error.message);return;}
+        actualizaciones=actualizaciones.filter(u=>String(u.id)!==String(id));renderizarActualizaciones();await actualizarContadoresMeGusta();alert("Actualización eliminada.");
+      }
+    });
     async function iniciarMeGusta() {
       const config = window.ATLANTA_SUPABASE_CONFIG;
       if (!window.supabase || !config || !config.url || !config.anonKey) {
@@ -734,8 +756,10 @@ html body>.container>.account-btn{
       clienteSupabase = window.supabase.createClient(config.url, config.anonKey);
       const { data } = await clienteSupabase.auth.getSession();
       sesionActual = data.session;
-      clienteSupabase.auth.onAuthStateChange((_evento, sesion) => {
+      await verificarAdminActualizaciones();
+      clienteSupabase.auth.onAuthStateChange(async (_evento, sesion) => {
         sesionActual = sesion;
+        await verificarAdminActualizaciones();
         actualizarContadoresMeGusta();
       });
       await actualizarContadoresMeGusta();
