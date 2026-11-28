@@ -687,7 +687,7 @@ html body>.container>.account-btn{
           <div class="update-fecha">${escaparContenido(u.fecha)}</div>
           <h4>${escaparContenido(u.titulo)}</h4>
           <ul>${u.cambios.map(c=>`<li>${escaparContenido(c)}</li>`).join("")}</ul>
-          ${esAdminActualizaciones?`<div class="update-admin-actions"><button type="button" class="update-edit-btn" data-update-id="${escaparContenido(u.id)}">Editar</button><button type="button" class="update-delete-btn" data-update-id="${escaparContenido(u.id)}">Eliminar</button></div>`:""}
+          ${esAdminActualizaciones && /^[0-9a-f-]{36}$/i.test(String(u.id))?`<div class="update-admin-actions"><button type="button" class="update-edit-btn" data-update-id="${escaparContenido(u.id)}">Editar</button><button type="button" class="update-delete-btn" data-update-id="${escaparContenido(u.id)}">Eliminar</button></div>`:""}
           <div class="update-like-row">
             <button class="update-like-btn" type="button" data-update-id="${escaparContenido(u.id)}" aria-pressed="false" aria-label="Me gusta">
               <span aria-hidden="true">👍</span><span class="update-like-label">Me gusta</span>
